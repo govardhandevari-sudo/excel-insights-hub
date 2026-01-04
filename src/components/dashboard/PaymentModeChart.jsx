@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 const data = [
   { name: "Credit", value: 35, color: "hsl(var(--chart-1))" },
@@ -9,22 +10,31 @@ const data = [
 ];
 
 export function PaymentModeChart() {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate('/payment-mode');
+  };
+
   return (
-    <Card className="shadow-card">
+    <Card className="shadow-card cursor-pointer hover:shadow-card-hover transition-shadow" onClick={handleClick}>
       <CardHeader className="pb-2">
-        <CardTitle className="font-heading text-lg">Payment Mode Distribution</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="font-heading text-base md:text-lg">Payment Mode Distribution</CardTitle>
+          <span className="text-xs text-primary">View details →</span>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center gap-6">
-          <div className="h-[180px] w-[180px]">
+        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+          <div className="h-[160px] w-[160px] md:h-[180px] md:w-[180px] flex-shrink-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={data}
                   cx="50%"
                   cy="50%"
-                  innerRadius={45}
-                  outerRadius={75}
+                  innerRadius={40}
+                  outerRadius={65}
                   paddingAngle={3}
                   dataKey="value"
                 >
@@ -39,20 +49,22 @@ export function PaymentModeChart() {
                     borderRadius: "8px",
                     fontSize: "12px"
                   }}
-                  formatter={(value: number) => [`${value}%`, '']}
+                  formatter={(value) => [`${value}%`, '']}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2 md:space-y-3 w-full md:w-auto">
             {data.map((item) => (
-              <div key={item.name} className="flex items-center gap-3">
-                <div 
-                  className="h-3 w-3 rounded-full" 
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="text-sm text-muted-foreground">{item.name}</span>
-                <Badge variant="secondary" className="ml-auto">{item.value}%</Badge>
+              <div key={item.name} className="flex items-center justify-between md:justify-start gap-3">
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="h-3 w-3 rounded-full flex-shrink-0" 
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-xs md:text-sm text-muted-foreground">{item.name}</span>
+                </div>
+                <Badge variant="secondary" className="text-xs">{item.value}%</Badge>
               </div>
             ))}
           </div>

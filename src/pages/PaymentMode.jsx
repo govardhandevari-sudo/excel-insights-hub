@@ -5,7 +5,7 @@ import { KPICard } from "@/components/dashboard/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, Wallet, Banknote, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const branchData = [
   { sno: 1, branch: "Punjagutta", credit: 35.2, creditPct: 34, upiCards: 48.5, upiCardsPct: 47, cash: 20.4, cashPct: 19, total: 104.1 },
@@ -33,37 +33,44 @@ const pieData = [
   { name: "Cash", value: totalCash, color: "hsl(var(--chart-3))" },
 ];
 
+const stackedChartData = branchData.map(b => ({
+  name: b.branch.substring(0, 6),
+  Credit: b.credit,
+  UPI: b.upiCards,
+  Cash: b.cash,
+}));
+
 const columns = [
-  { key: "sno", label: "S.No", align: "center" as const },
-  { key: "branch", label: "Branch", align: "left" as const },
-  { key: "credit", label: "Credit (₹L)", align: "right" as const, render: (v: number) => `₹${v.toFixed(1)}L` },
+  { key: "sno", label: "S.No", align: "center" },
+  { key: "branch", label: "Branch", align: "left" },
+  { key: "credit", label: "Credit (₹L)", align: "right", render: (v) => `₹${v.toFixed(1)}L` },
   { 
     key: "creditPct", 
     label: "Credit %", 
-    align: "center" as const, 
-    render: (v: number) => <Badge variant="secondary" className="bg-chart-1/10 text-chart-1">{v}%</Badge>
+    align: "center", 
+    render: (v) => <Badge variant="secondary" className="bg-chart-1/10 text-chart-1">{v}%</Badge>
   },
-  { key: "upiCards", label: "UPI/Cards (₹L)", align: "right" as const, render: (v: number) => `₹${v.toFixed(1)}L` },
+  { key: "upiCards", label: "UPI/Cards (₹L)", align: "right", render: (v) => `₹${v.toFixed(1)}L` },
   { 
     key: "upiCardsPct", 
     label: "UPI %", 
-    align: "center" as const, 
-    render: (v: number) => <Badge variant="secondary" className="bg-chart-2/10 text-chart-2">{v}%</Badge>
+    align: "center", 
+    render: (v) => <Badge variant="secondary" className="bg-chart-2/10 text-chart-2">{v}%</Badge>
   },
-  { key: "cash", label: "Cash (₹L)", align: "right" as const, render: (v: number) => `₹${v.toFixed(1)}L` },
+  { key: "cash", label: "Cash (₹L)", align: "right", render: (v) => `₹${v.toFixed(1)}L` },
   { 
     key: "cashPct", 
     label: "Cash %", 
-    align: "center" as const, 
-    render: (v: number) => <Badge variant="secondary" className="bg-chart-3/10 text-chart-3">{v}%</Badge>
+    align: "center", 
+    render: (v) => <Badge variant="secondary" className="bg-chart-3/10 text-chart-3">{v}%</Badge>
   },
-  { key: "total", label: "Total", align: "right" as const, render: (v: number) => <span className="font-semibold">₹{v.toFixed(1)}L</span> },
+  { key: "total", label: "Total", align: "right", render: (v) => <span className="font-semibold">₹{v.toFixed(1)}L</span> },
 ];
 
 const PaymentMode = () => {
   return (
     <DashboardLayout>
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-4 md:space-y-6 animate-fade-in">
         <PageHeader
           title="Payment Mode Report"
           description="Revenue breakdown by payment method across branches"
@@ -71,7 +78,7 @@ const PaymentMode = () => {
           badge="Daily/Weekly"
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <KPICard
             title="Credit Payments"
             value={`₹${totalCredit.toFixed(1)}L`}
@@ -103,20 +110,20 @@ const PaymentMode = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="shadow-card lg:col-span-1">
+          <Card className="shadow-card">
             <CardHeader className="pb-2">
-              <CardTitle className="font-heading text-lg">Payment Distribution</CardTitle>
+              <CardTitle className="font-heading text-base md:text-lg">Payment Distribution</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[280px]">
+              <div className="h-[240px] md:h-[280px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
+                      innerRadius={50}
+                      outerRadius={85}
                       paddingAngle={3}
                       dataKey="value"
                     >
@@ -131,9 +138,9 @@ const PaymentMode = () => {
                         borderRadius: "8px",
                         fontSize: "12px"
                       }}
-                      formatter={(value: number) => [`₹${value.toFixed(1)}L`, '']}
+                      formatter={(value) => [`₹${value.toFixed(1)}L`, '']}
                     />
-                    <Legend />
+                    <Legend wrapperStyle={{ fontSize: '11px' }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -142,28 +149,41 @@ const PaymentMode = () => {
 
           <Card className="shadow-card lg:col-span-2">
             <CardHeader className="pb-2">
-              <CardTitle className="font-heading text-lg">Payment Mode Insights</CardTitle>
+              <CardTitle className="font-heading text-base md:text-lg">Branch-wise Payment Mix (Stacked)</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {pieData.map((item) => (
-                  <div key={item.name} className="p-4 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="font-medium text-foreground">{item.name}</span>
-                    </div>
-                    <p className="text-2xl font-bold font-heading">₹{item.value.toFixed(1)}L</p>
-                    <p className="text-sm text-muted-foreground">
-                      {((item.value / grandTotal) * 100).toFixed(1)}% of total
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-                <p className="text-sm text-foreground">
-                  <span className="font-semibold">Key Insight:</span> UPI/Card payments lead with 47% share. 
-                  Digital payments (Credit + UPI) constitute 77% of total revenue, showing strong digital adoption.
-                </p>
+            <CardContent>
+              <div className="h-[240px] md:h-[280px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stackedChartData} margin={{ top: 10, right: 10, left: -10, bottom: 60 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      axisLine={{ stroke: "hsl(var(--border))" }}
+                      tickLine={false}
+                      angle={-45}
+                      textAnchor="end"
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: "hsl(var(--card))", 
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        fontSize: "12px"
+                      }}
+                      formatter={(value) => [`₹${value.toFixed(1)}L`, '']}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                    <Bar dataKey="Credit" fill="hsl(var(--chart-1))" stackId="a" />
+                    <Bar dataKey="UPI" fill="hsl(var(--chart-2))" stackId="a" />
+                    <Bar dataKey="Cash" fill="hsl(var(--chart-3))" stackId="a" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
