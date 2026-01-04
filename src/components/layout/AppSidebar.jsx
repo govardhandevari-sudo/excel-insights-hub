@@ -7,8 +7,7 @@ import {
   Building2, 
   UserCheck, 
   GitBranch,
-  BarChart3,
-  Activity
+  BarChart3
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import logo from "@/assets/logo.png";

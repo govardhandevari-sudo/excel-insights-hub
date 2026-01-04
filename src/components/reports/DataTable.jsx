@@ -1,41 +1,36 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
-interface DataTableColumn {
-  key: string;
-  label: string;
-  align?: "left" | "center" | "right";
-  render?: (value: any, row: any) => React.ReactNode;
-}
+export function DataTable({ title, subtitle, columns, data, className, onRowClick, rowClickable }) {
+  const navigate = useNavigate();
 
-interface DataTableProps {
-  title: string;
-  subtitle?: string;
-  columns: DataTableColumn[];
-  data: any[];
-  className?: string;
-}
+  const handleRowClick = (row) => {
+    if (row.drilldownUrl) {
+      navigate(row.drilldownUrl);
+    } else if (onRowClick) {
+      onRowClick(row);
+    }
+  };
 
-export function DataTable({ title, subtitle, columns, data, className }: DataTableProps) {
   return (
     <Card className={cn("shadow-card", className)}>
       <CardHeader className="pb-3">
         <div>
-          <CardTitle className="font-heading text-lg">{title}</CardTitle>
-          {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+          <CardTitle className="font-heading text-base md:text-lg">{title}</CardTitle>
+          {subtitle && <p className="text-xs md:text-sm text-muted-foreground mt-1">{subtitle}</p>}
         </div>
       </CardHeader>
       <CardContent className="p-0">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {columns.map((col) => (
                   <th
                     key={col.key}
                     className={cn(
-                      "px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider",
+                      "px-3 md:px-4 py-2 md:py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap",
                       col.align === "center" && "text-center",
                       col.align === "right" && "text-right",
                       !col.align && "text-left"
@@ -52,14 +47,16 @@ export function DataTable({ title, subtitle, columns, data, className }: DataTab
                   key={idx} 
                   className={cn(
                     "border-b border-border last:border-0 hover:bg-muted/30 transition-colors",
-                    row.isHeader && "bg-muted/50 font-semibold"
+                    row.isHeader && "bg-muted/50 font-semibold",
+                    (row.drilldownUrl || rowClickable) && !row.isHeader && "cursor-pointer hover:bg-primary/5"
                   )}
+                  onClick={() => !row.isHeader && handleRowClick(row)}
                 >
                   {columns.map((col) => (
                     <td
                       key={col.key}
                       className={cn(
-                        "px-4 py-3 text-sm",
+                        "px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm whitespace-nowrap",
                         col.align === "center" && "text-center",
                         col.align === "right" && "text-right",
                         !col.align && "text-left"

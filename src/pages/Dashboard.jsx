@@ -5,6 +5,9 @@ import { LabRadSplitChart } from "@/components/dashboard/LabRadSplitChart";
 import { RevenueTrendChart } from "@/components/dashboard/RevenueTrendChart";
 import { TopPerformersCard } from "@/components/dashboard/TopPerformersCard";
 import { PaymentModeChart } from "@/components/dashboard/PaymentModeChart";
+import { WeeklyTrendStackedChart } from "@/components/dashboard/WeeklyTrendStackedChart";
+import { DepartmentHeatMap } from "@/components/dashboard/DepartmentHeatMap";
+import { MonthlyTrendAreaChart } from "@/components/dashboard/MonthlyTrendAreaChart";
 import { 
   TrendingUp, 
   Target, 
@@ -18,25 +21,25 @@ import {
 const Dashboard = () => {
   return (
     <DashboardLayout>
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-4 md:space-y-6 animate-fade-in">
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold font-heading text-foreground">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold font-heading text-foreground">
               Dashboard
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-sm md:text-base text-muted-foreground mt-1">
               MegSan Diagnostics - December 2025 Performance Overview
             </p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-4 py-2 rounded-lg">
-            <Calendar className="h-4 w-4" />
+          <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground bg-muted px-3 py-2 rounded-lg self-start md:self-auto">
+            <Calendar className="h-3 w-3 md:h-4 md:w-4" />
             <span>Last updated: Dec 29, 2025</span>
           </div>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* KPI Cards with Drill-down */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <KPICard
             title="MTD Revenue"
             value="₹21.12L"
@@ -44,6 +47,7 @@ const Dashboard = () => {
             changeType="positive"
             icon={TrendingUp}
             subtitle="vs last month"
+            drilldownUrl="/revenue"
           />
           <KPICard
             title="MTD Target"
@@ -51,6 +55,7 @@ const Dashboard = () => {
             change="84.5% achieved"
             changeType="neutral"
             icon={Target}
+            drilldownUrl="/revenue"
           />
           <KPICard
             title="Total Patients"
@@ -59,6 +64,7 @@ const Dashboard = () => {
             changeType="positive"
             icon={Users}
             subtitle="this month"
+            drilldownUrl="/avg-realisation"
           />
           <KPICard
             title="Active Branches"
@@ -66,10 +72,11 @@ const Dashboard = () => {
             change="3 states"
             changeType="neutral"
             icon={Building2}
+            drilldownUrl="/revenue"
           />
         </div>
 
-        {/* Charts Row 1 */}
+        {/* Charts Row 1 - Area Chart & Donut */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
             <RevenueTrendChart />
@@ -77,7 +84,7 @@ const Dashboard = () => {
           <LabRadSplitChart />
         </div>
 
-        {/* Charts Row 2 */}
+        {/* Charts Row 2 - Stacked Bar & Top Performers */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
             <BranchRevenueChart />
@@ -85,16 +92,26 @@ const Dashboard = () => {
           <TopPerformersCard />
         </div>
 
-        {/* Charts Row 3 */}
+        {/* Charts Row 3 - Weekly Stacked Trend & Monthly Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <WeeklyTrendStackedChart />
+          <MonthlyTrendAreaChart />
+        </div>
+
+        {/* Charts Row 4 - Heat Map */}
+        <DepartmentHeatMap />
+
+        {/* Charts Row 5 - Payment Mode & Additional KPIs */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <PaymentModeChart />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
             <KPICard
               title="Avg Per Patient"
               value="₹2,475"
               change="+8.3%"
               changeType="positive"
               icon={Activity}
+              drilldownUrl="/avg-realisation"
             />
             <KPICard
               title="Referral Rate"
@@ -102,6 +119,7 @@ const Dashboard = () => {
               change="+2.1%"
               changeType="positive"
               icon={ArrowUpRight}
+              drilldownUrl="/ref-nonref"
             />
           </div>
         </div>
