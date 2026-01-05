@@ -1,11 +1,12 @@
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/reports/PageHeader";
+import { ReportFilters } from "@/components/reports/ReportFilters";
 import { DataTable } from "@/components/reports/DataTable";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, TrendingUp, TrendingDown, Target } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, Legend } from "recharts";
-import { useNavigate } from "react-router-dom";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from "recharts";
 
 const branchData = [
   { sno: 1, branch: "Punjagutta", labAvg: 1850, radAvg: 3200, totalAvg: 2475, nov: 2350, oct: 2280, bdHead: "Nagesh", drilldownUrl: "/salesperson?branch=punjagutta" },
@@ -22,44 +23,53 @@ const branchData = [
   { sno: 12, branch: "Bangalore", labAvg: 2100, radAvg: 3500, totalAvg: 2750, nov: 2650, oct: 2550, bdHead: "Dr. Sreenath", drilldownUrl: "/salesperson?branch=bangalore" },
 ];
 
-const chartData = branchData.map(b => ({
-  name: b.branch.substring(0, 6),
-  Lab: b.labAvg,
-  Radiology: b.radAvg,
-}));
-
-const trendData = branchData.map(b => ({
-  name: b.branch.substring(0, 6),
-  Oct: b.oct,
-  Nov: b.nov,
-  Dec: b.totalAvg,
-}));
-
-const avgOverall = branchData.reduce((sum, b) => sum + b.totalAvg, 0) / branchData.length;
-const highestBranch = branchData.reduce((max, b) => b.totalAvg > max.totalAvg ? b : max, branchData[0]);
-const lowestBranch = branchData.reduce((min, b) => b.totalAvg < min.totalAvg ? b : min, branchData[0]);
-
-const columns = [
-  { key: "sno", label: "S.No", align: "center" },
-  { key: "branch", label: "Branch", align: "left" },
-  { key: "labAvg", label: "Lab Avg (₹)", align: "right", render: (v) => `₹${v.toLocaleString()}` },
-  { key: "radAvg", label: "Rad Avg (₹)", align: "right", render: (v) => `₹${v.toLocaleString()}` },
-  { 
-    key: "totalAvg", 
-    label: "Total Avg (₹)", 
-    align: "right", 
-    render: (v) => (
-      <span className={v >= avgOverall ? "text-success font-semibold" : "text-foreground"}>
-        ₹{v.toLocaleString()}
-      </span>
-    )
-  },
-  { key: "nov", label: "Nov '25", align: "right", render: (v) => `₹${v.toLocaleString()}` },
-  { key: "oct", label: "Oct '25", align: "right", render: (v) => `₹${v.toLocaleString()}` },
-  { key: "bdHead", label: "BD Head", align: "left" },
-];
-
 const AvgRealisation = () => {
+  const [filters, setFilters] = useState({});
+
+  const filteredData = useMemo(() => {
+    return branchData.filter(item => {
+      if (filters.branch && filters.branch !== "all" && item.branch.toLowerCase() !== filters.branch) return false;
+      return true;
+    });
+  }, [filters]);
+
+  const chartData = filteredData.map(b => ({
+    name: b.branch.substring(0, 6),
+    Lab: b.labAvg,
+    Radiology: b.radAvg,
+  }));
+
+  const trendData = filteredData.map(b => ({
+    name: b.branch.substring(0, 6),
+    Oct: b.oct,
+    Nov: b.nov,
+    Dec: b.totalAvg,
+  }));
+
+  const avgOverall = filteredData.reduce((sum, b) => sum + b.totalAvg, 0) / filteredData.length;
+  const highestBranch = filteredData.reduce((max, b) => b.totalAvg > max.totalAvg ? b : max, filteredData[0]);
+  const lowestBranch = filteredData.reduce((min, b) => b.totalAvg < min.totalAvg ? b : min, filteredData[0]);
+
+  const columns = [
+    { key: "sno", label: "S.No", align: "center" },
+    { key: "branch", label: "Branch", align: "left" },
+    { key: "labAvg", label: "Lab Avg (₹)", align: "right", render: (v) => `₹${v.toLocaleString()}` },
+    { key: "radAvg", label: "Rad Avg (₹)", align: "right", render: (v) => `₹${v.toLocaleString()}` },
+    { 
+      key: "totalAvg", 
+      label: "Total Avg (₹)", 
+      align: "right", 
+      render: (v) => (
+        <span className={v >= avgOverall ? "text-success font-semibold" : "text-foreground"}>
+          ₹{v.toLocaleString()}
+        </span>
+      )
+    },
+    { key: "nov", label: "Nov '25", align: "right", render: (v) => `₹${v.toLocaleString()}` },
+    { key: "oct", label: "Oct '25", align: "right", render: (v) => `₹${v.toLocaleString()}` },
+    { key: "bdHead", label: "BD Head", align: "left" },
+  ];
+
   return (
     <DashboardLayout>
       <div className="space-y-4 md:space-y-6 animate-fade-in">
@@ -68,6 +78,13 @@ const AvgRealisation = () => {
           description="Average revenue generated per patient across branches"
           icon={Users}
           badge="Weekly"
+        />
+
+        <ReportFilters
+          showBranch
+          showDateRange
+          filters={filters}
+          onFilterChange={setFilters}
         />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -80,19 +97,19 @@ const AvgRealisation = () => {
           />
           <KPICard
             title="Highest Avg"
-            value={highestBranch.branch}
-            change={`₹${highestBranch.totalAvg.toLocaleString()} per patient`}
+            value={highestBranch?.branch || "N/A"}
+            change={highestBranch ? `₹${highestBranch.totalAvg.toLocaleString()} per patient` : ""}
             changeType="positive"
             icon={TrendingUp}
-            drilldownUrl={highestBranch.drilldownUrl}
+            drilldownUrl={highestBranch?.drilldownUrl}
           />
           <KPICard
             title="Lowest Avg"
-            value={lowestBranch.branch}
-            change={`₹${lowestBranch.totalAvg.toLocaleString()} per patient`}
+            value={lowestBranch?.branch || "N/A"}
+            change={lowestBranch ? `₹${lowestBranch.totalAvg.toLocaleString()} per patient` : ""}
             changeType="negative"
             icon={TrendingDown}
-            drilldownUrl={lowestBranch.drilldownUrl}
+            drilldownUrl={lowestBranch?.drilldownUrl}
           />
           <KPICard
             title="Target Avg"
@@ -104,7 +121,6 @@ const AvgRealisation = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Stacked Bar Chart - Lab vs Rad */}
           <Card className="shadow-card">
             <CardHeader className="pb-2">
               <CardTitle className="font-heading text-base md:text-lg">Lab vs Radiology Avg (Stacked)</CardTitle>
@@ -146,7 +162,6 @@ const AvgRealisation = () => {
             </CardContent>
           </Card>
 
-          {/* Area Chart - Monthly Trend */}
           <Card className="shadow-card">
             <CardHeader className="pb-2">
               <CardTitle className="font-heading text-base md:text-lg">Monthly Trend (Area)</CardTitle>
@@ -208,7 +223,7 @@ const AvgRealisation = () => {
           title="Branch-wise Average Realisation"
           subtitle="Monthly comparison - Green indicates above average - Click rows to drill down"
           columns={columns}
-          data={branchData}
+          data={filteredData}
           rowClickable
         />
       </div>

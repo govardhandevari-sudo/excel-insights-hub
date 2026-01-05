@@ -1,12 +1,13 @@
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/reports/PageHeader";
+import { ReportFilters } from "@/components/reports/ReportFilters";
 import { DataTable } from "@/components/reports/DataTable";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Target, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from "recharts";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const branchData = [
   { sno: 1, state: "TS", branch: "Punjagutta", w52: 12.5, w51: 11.8, w50: 13.2, mtdPlan: 50.0, mtdAch: 42.5, achPct: 85.0, gap: -7.5, bdHead: "Nagesh", drilldownUrl: "/lab-rad?branch=punjagutta" },
@@ -22,13 +23,6 @@ const branchData = [
   { sno: 11, state: "AP", branch: "Rajahmundry", w52: 7.2, w51: 6.5, w50: 7.5, mtdPlan: 30.0, mtdAch: 25.5, achPct: 85.0, gap: -4.5, bdHead: "Satish", drilldownUrl: "/lab-rad?branch=rajahmundry" },
   { sno: 12, state: "KA", branch: "Bangalore", w52: 15.5, w51: 14.2, w50: 16.0, mtdPlan: 65.0, mtdAch: 55.8, achPct: 85.8, gap: -9.2, bdHead: "Dr. Sreenath", drilldownUrl: "/lab-rad?branch=bangalore" },
 ];
-
-const trendData = branchData.map(b => ({
-  name: b.branch.substring(0, 6),
-  W50: b.w50,
-  W51: b.w51,
-  W52: b.w52,
-}));
 
 const columns = [
   { key: "sno", label: "S.No", align: "center" },
@@ -66,21 +60,43 @@ const columns = [
 ];
 
 const DailyRevenue = () => {
-  const [searchParams] = useSearchParams();
-  const selectedBranch = searchParams.get('branch');
+  const [filters, setFilters] = useState({});
   
-  const totalMTD = branchData.reduce((sum, b) => sum + b.mtdAch, 0);
-  const totalPlan = branchData.reduce((sum, b) => sum + b.mtdPlan, 0);
-  const avgAch = (totalMTD / totalPlan) * 100;
+  const filteredData = useMemo(() => {
+    return branchData.filter(item => {
+      if (filters.state && filters.state !== "all" && item.state !== filters.state) return false;
+      if (filters.branch && filters.branch !== "all" && item.branch.toLowerCase() !== filters.branch) return false;
+      return true;
+    });
+  }, [filters]);
+
+  const trendData = filteredData.map(b => ({
+    name: b.branch.substring(0, 6),
+    W50: b.w50,
+    W51: b.w51,
+    W52: b.w52,
+  }));
+
+  const totalMTD = filteredData.reduce((sum, b) => sum + b.mtdAch, 0);
+  const totalPlan = filteredData.reduce((sum, b) => sum + b.mtdPlan, 0);
+  const avgAch = totalPlan > 0 ? (totalMTD / totalPlan) * 100 : 0;
 
   return (
     <DashboardLayout>
       <div className="space-y-4 md:space-y-6 animate-fade-in">
         <PageHeader
           title="Daily Revenue Report"
-          description={selectedBranch ? `Filtered by: ${selectedBranch.toUpperCase()}` : "Branch-wise revenue performance across all states"}
+          description="Branch-wise revenue performance across all states"
           icon={TrendingUp}
           badge="Daily Report"
+        />
+
+        <ReportFilters
+          showState
+          showBranch
+          showDateRange
+          filters={filters}
+          onFilterChange={setFilters}
         />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -114,7 +130,6 @@ const DailyRevenue = () => {
           />
         </div>
 
-        {/* Stacked Area Chart for Trend */}
         <Card className="shadow-card">
           <CardHeader className="pb-2">
             <CardTitle className="font-heading text-base md:text-lg">Weekly Trend by Branch (Stacked)</CardTitle>
@@ -161,7 +176,7 @@ const DailyRevenue = () => {
           title="Branch-wise Revenue Summary"
           subtitle="All amounts in Lakhs (₹) - Click rows to drill down"
           columns={columns}
-          data={branchData}
+          data={filteredData}
           rowClickable
         />
       </div>

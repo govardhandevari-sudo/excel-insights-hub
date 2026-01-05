@@ -1,12 +1,13 @@
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/reports/PageHeader";
+import { ReportFilters } from "@/components/reports/ReportFilters";
 import { DataTable } from "@/components/reports/DataTable";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FlaskConical, Activity, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from "recharts";
-import { useSearchParams } from "react-router-dom";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const branchData = [
   { sno: 1, branch: "Punjagutta", labMTD: 24.4, labPct: 23, radMTD: 79.7, radPct: 77, total: 104.1, bdHead: "Nagesh", drilldownUrl: "/dept-revenue?branch=punjagutta" },
@@ -22,12 +23,6 @@ const branchData = [
   { sno: 11, branch: "Rajahmundry", labMTD: 15.2, labPct: 38, radMTD: 24.8, radPct: 62, total: 40.0, bdHead: "Satish", drilldownUrl: "/dept-revenue?branch=rajahmundry" },
   { sno: 12, branch: "Bangalore", labMTD: 52.6, labPct: 50, radMTD: 52.6, radPct: 50, total: 105.2, bdHead: "Dr. Sreenath", drilldownUrl: "/dept-revenue?branch=bangalore" },
 ];
-
-const chartData = branchData.map(b => ({
-  name: b.branch.substring(0, 6),
-  Lab: b.labMTD,
-  Radiology: b.radMTD,
-}));
 
 const columns = [
   { key: "sno", label: "S.No", align: "center" },
@@ -51,11 +46,23 @@ const columns = [
 ];
 
 const LabRadReport = () => {
-  const [searchParams] = useSearchParams();
-  const selectedBranch = searchParams.get('branch');
-  
-  const totalLab = branchData.reduce((sum, b) => sum + b.labMTD, 0);
-  const totalRad = branchData.reduce((sum, b) => sum + b.radMTD, 0);
+  const [filters, setFilters] = useState({});
+
+  const filteredData = useMemo(() => {
+    return branchData.filter(item => {
+      if (filters.branch && filters.branch !== "all" && item.branch.toLowerCase() !== filters.branch) return false;
+      return true;
+    });
+  }, [filters]);
+
+  const chartData = filteredData.map(b => ({
+    name: b.branch.substring(0, 6),
+    Lab: b.labMTD,
+    Radiology: b.radMTD,
+  }));
+
+  const totalLab = filteredData.reduce((sum, b) => sum + b.labMTD, 0);
+  const totalRad = filteredData.reduce((sum, b) => sum + b.radMTD, 0);
   const total = totalLab + totalRad;
 
   return (
@@ -63,9 +70,16 @@ const LabRadReport = () => {
       <div className="space-y-4 md:space-y-6 animate-fade-in">
         <PageHeader
           title="Lab & Radiology Report"
-          description={selectedBranch ? `Filtered by: ${selectedBranch.toUpperCase()}` : "Daily breakdown of Lab and Radiology revenue by branch"}
+          description="Daily breakdown of Lab and Radiology revenue by branch"
           icon={FlaskConical}
           badge="Daily Report"
+        />
+
+        <ReportFilters
+          showBranch
+          showDateRange
+          filters={filters}
+          onFilterChange={setFilters}
         />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -103,7 +117,6 @@ const LabRadReport = () => {
           />
         </div>
 
-        {/* Stacked Bar Chart */}
         <Card className="shadow-card">
           <CardHeader className="pb-2">
             <CardTitle className="font-heading text-base md:text-lg">Lab vs Radiology by Branch (Stacked)</CardTitle>
@@ -148,7 +161,7 @@ const LabRadReport = () => {
           title="Detailed Lab & Radiology Breakdown"
           subtitle="Month-to-date revenue split (December 2025) - Click rows to drill down"
           columns={columns}
-          data={branchData}
+          data={filteredData}
           rowClickable
         />
       </div>
