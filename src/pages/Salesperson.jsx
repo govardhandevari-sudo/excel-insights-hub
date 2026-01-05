@@ -1,12 +1,13 @@
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/reports/PageHeader";
+import { ReportFilters } from "@/components/reports/ReportFilters";
 import { DataTable } from "@/components/reports/DataTable";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserCheck, TrendingUp, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, Legend } from "recharts";
-import { useSearchParams } from "react-router-dom";
 
 const salespersonData = [
   { sno: "", location: "KOMPALLY", isHeader: true },
@@ -20,30 +21,6 @@ const salespersonData = [
   { sno: 7, name: "Ramaswamy", location: "KPHB", mtd: 2.12, projection: 2.4, growth: 6.5, nov: 1.99, oct: 1.89 },
   { sno: 8, name: "Veeresh", location: "KPHB", mtd: 1.85, projection: 2.1, growth: 4.2, nov: 1.78, oct: 1.72 },
 ];
-
-const chartData = salespersonData
-  .filter(s => !s.isHeader && s.mtd)
-  .sort((a, b) => (b.mtd || 0) - (a.mtd || 0))
-  .slice(0, 8)
-  .map(s => ({
-    name: s.name,
-    value: s.mtd,
-    growth: s.growth,
-  }));
-
-const trendData = salespersonData
-  .filter(s => !s.isHeader && s.mtd)
-  .slice(0, 4)
-  .map(s => ({
-    name: s.name,
-    Oct: s.oct,
-    Nov: s.nov,
-    Dec: s.mtd,
-  }));
-
-const totalMTD = salespersonData.filter(s => !s.isHeader).reduce((sum, s) => sum + (s.mtd || 0), 0);
-const avgGrowth = salespersonData.filter(s => !s.isHeader && s.growth).reduce((sum, s) => sum + (s.growth || 0), 0) / 
-                  salespersonData.filter(s => !s.isHeader && s.growth).length;
 
 const columns = [
   { key: "sno", label: "S.No", align: "center" },
@@ -74,17 +51,63 @@ const columns = [
 ];
 
 const Salesperson = () => {
-  const [searchParams] = useSearchParams();
-  const selectedBranch = searchParams.get('branch');
+  const [filters, setFilters] = useState({});
+
+  const filteredData = useMemo(() => {
+    return salespersonData.filter(item => {
+      if (filters.branch && filters.branch !== "all") {
+        if (item.isHeader) {
+          return item.location.toLowerCase() === filters.branch;
+        }
+        return item.location.toLowerCase() === filters.branch;
+      }
+      if (filters.salesperson && filters.salesperson !== "all" && !item.isHeader) {
+        return item.name.toLowerCase() === filters.salesperson;
+      }
+      return true;
+    });
+  }, [filters]);
+
+  const chartData = filteredData
+    .filter(s => !s.isHeader && s.mtd)
+    .sort((a, b) => (b.mtd || 0) - (a.mtd || 0))
+    .slice(0, 8)
+    .map(s => ({
+      name: s.name,
+      value: s.mtd,
+      growth: s.growth,
+    }));
+
+  const trendData = filteredData
+    .filter(s => !s.isHeader && s.mtd)
+    .slice(0, 4)
+    .map(s => ({
+      name: s.name,
+      Oct: s.oct,
+      Nov: s.nov,
+      Dec: s.mtd,
+    }));
+
+  const totalMTD = filteredData.filter(s => !s.isHeader).reduce((sum, s) => sum + (s.mtd || 0), 0);
+  const growthData = filteredData.filter(s => !s.isHeader && s.growth);
+  const avgGrowth = growthData.length > 0 ? growthData.reduce((sum, s) => sum + (s.growth || 0), 0) / growthData.length : 0;
 
   return (
     <DashboardLayout>
       <div className="space-y-4 md:space-y-6 animate-fade-in">
         <PageHeader
           title="Salesperson Performance"
-          description={selectedBranch ? `Filtered by: ${selectedBranch.toUpperCase()}` : "Individual sales team member performance tracking"}
+          description="Individual sales team member performance tracking"
           icon={UserCheck}
           badge="Daily"
+        />
+
+        <ReportFilters
+          showBranch
+          showSalesperson
+          showDateRange
+          filters={filters}
+          onFilterChange={setFilters}
         />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -111,8 +134,8 @@ const Salesperson = () => {
           />
           <KPICard
             title="Team Size"
-            value="8"
-            change="2 locations"
+            value={filteredData.filter(s => !s.isHeader).length.toString()}
+            change="Active members"
             changeType="neutral"
             icon={Target}
           />
@@ -225,7 +248,7 @@ const Salesperson = () => {
           title="Detailed Salesperson Performance"
           subtitle="Month-to-date performance with growth comparison"
           columns={columns}
-          data={salespersonData}
+          data={filteredData}
         />
       </div>
     </DashboardLayout>

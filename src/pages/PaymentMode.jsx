@@ -1,5 +1,7 @@
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/reports/PageHeader";
+import { ReportFilters } from "@/components/reports/ReportFilters";
 import { DataTable } from "@/components/reports/DataTable";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,24 +23,6 @@ const branchData = [
   { sno: 11, branch: "Rajahmundry", credit: 12.0, creditPct: 30, upiCards: 18.0, upiCardsPct: 45, cash: 10.0, cashPct: 25, total: 40.0 },
   { sno: 12, branch: "Bangalore", credit: 36.8, creditPct: 35, upiCards: 47.4, upiCardsPct: 45, cash: 21.0, cashPct: 20, total: 105.2 },
 ];
-
-const totalCredit = branchData.reduce((sum, b) => sum + b.credit, 0);
-const totalUPI = branchData.reduce((sum, b) => sum + b.upiCards, 0);
-const totalCash = branchData.reduce((sum, b) => sum + b.cash, 0);
-const grandTotal = totalCredit + totalUPI + totalCash;
-
-const pieData = [
-  { name: "Credit", value: totalCredit, color: "hsl(var(--chart-1))" },
-  { name: "UPI/Cards", value: totalUPI, color: "hsl(var(--chart-2))" },
-  { name: "Cash", value: totalCash, color: "hsl(var(--chart-3))" },
-];
-
-const stackedChartData = branchData.map(b => ({
-  name: b.branch.substring(0, 6),
-  Credit: b.credit,
-  UPI: b.upiCards,
-  Cash: b.cash,
-}));
 
 const columns = [
   { key: "sno", label: "S.No", align: "center" },
@@ -68,6 +52,37 @@ const columns = [
 ];
 
 const PaymentMode = () => {
+  const [filters, setFilters] = useState({});
+
+  const filteredData = useMemo(() => {
+    return branchData.filter(item => {
+      if (filters.branch && filters.branch !== "all" && item.branch.toLowerCase() !== filters.branch) return false;
+      if (filters.paymentMode && filters.paymentMode !== "all") {
+        // This would filter by payment mode if we had individual transactions
+        // For now, we show all data since this is aggregated
+      }
+      return true;
+    });
+  }, [filters]);
+
+  const totalCredit = filteredData.reduce((sum, b) => sum + b.credit, 0);
+  const totalUPI = filteredData.reduce((sum, b) => sum + b.upiCards, 0);
+  const totalCash = filteredData.reduce((sum, b) => sum + b.cash, 0);
+  const grandTotal = totalCredit + totalUPI + totalCash;
+
+  const pieData = [
+    { name: "Credit", value: totalCredit, color: "hsl(var(--chart-1))" },
+    { name: "UPI/Cards", value: totalUPI, color: "hsl(var(--chart-2))" },
+    { name: "Cash", value: totalCash, color: "hsl(var(--chart-3))" },
+  ];
+
+  const stackedChartData = filteredData.map(b => ({
+    name: b.branch.substring(0, 6),
+    Credit: b.credit,
+    UPI: b.upiCards,
+    Cash: b.cash,
+  }));
+
   return (
     <DashboardLayout>
       <div className="space-y-4 md:space-y-6 animate-fade-in">
@@ -76,6 +91,14 @@ const PaymentMode = () => {
           description="Revenue breakdown by payment method across branches"
           icon={CreditCard}
           badge="Daily/Weekly"
+        />
+
+        <ReportFilters
+          showBranch
+          showPaymentMode
+          showDateRange
+          filters={filters}
+          onFilterChange={setFilters}
         />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -193,7 +216,7 @@ const PaymentMode = () => {
           title="Branch-wise Payment Mode Breakdown"
           subtitle="December 2025 - All amounts in Lakhs"
           columns={columns}
-          data={branchData}
+          data={filteredData}
         />
       </div>
     </DashboardLayout>

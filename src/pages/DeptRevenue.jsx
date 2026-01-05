@@ -1,11 +1,12 @@
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/reports/PageHeader";
+import { ReportFilters } from "@/components/reports/ReportFilters";
 import { DataTable } from "@/components/reports/DataTable";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, TrendingUp, Activity } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from "recharts";
-import { useSearchParams } from "react-router-dom";
 
 const departmentData = [
   { sno: 1, category: "RADIOLOGY", isHeader: true },
@@ -65,19 +66,35 @@ const columns = [
 ];
 
 const DeptRevenue = () => {
-  const [searchParams] = useSearchParams();
-  const selectedBranch = searchParams.get('branch');
-  
-  const totalMTD = departmentData.filter(d => !d.isHeader && d.mtd).reduce((sum, d) => sum + (d.mtd || 0), 0);
+  const [filters, setFilters] = useState({});
+
+  const filteredData = useMemo(() => {
+    return departmentData.filter(item => {
+      if (filters.department && filters.department !== "all" && !item.isHeader) {
+        return item.department.toLowerCase().includes(filters.department);
+      }
+      return true;
+    });
+  }, [filters]);
+
+  const totalMTD = filteredData.filter(d => !d.isHeader && d.mtd).reduce((sum, d) => sum + (d.mtd || 0), 0);
 
   return (
     <DashboardLayout>
       <div className="space-y-4 md:space-y-6 animate-fade-in">
         <PageHeader
           title="Department Wise Revenue"
-          description={selectedBranch ? `Filtered by: ${selectedBranch.toUpperCase()}` : "Revenue summary by medical department and service"}
+          description="Revenue summary by medical department and service"
           icon={Building2}
           badge="Daily"
+        />
+
+        <ReportFilters
+          showBranch
+          showDepartment
+          showDateRange
+          filters={filters}
+          onFilterChange={setFilters}
         />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -212,7 +229,7 @@ const DeptRevenue = () => {
           title="Complete Department Revenue Summary"
           subtitle="Hourly data pull - All amounts in Lakhs - Click rows to drill down"
           columns={columns}
-          data={departmentData}
+          data={filteredData}
           rowClickable
         />
       </div>

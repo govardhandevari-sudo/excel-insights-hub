@@ -1,11 +1,13 @@
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/reports/PageHeader";
+import { ReportFilters } from "@/components/reports/ReportFilters";
 import { DataTable } from "@/components/reports/DataTable";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GitBranch, TrendingUp, Users, UserMinus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const branchData = [
   { sno: 1, branch: "Punjagutta", ref: 72.5, refPct: 70, nonRef: 31.6, nonRefPct: 30, total: 104.1, bdHead: "Nagesh" },
@@ -21,21 +23,6 @@ const branchData = [
   { sno: 11, branch: "Rajahmundry", ref: 26.8, refPct: 67, nonRef: 13.2, nonRefPct: 33, total: 40.0, bdHead: "Satish" },
   { sno: 12, branch: "Bangalore", ref: 68.4, refPct: 65, nonRef: 36.8, nonRefPct: 35, total: 105.2, bdHead: "Dr. Sreenath" },
 ];
-
-const totalRef = branchData.reduce((sum, b) => sum + b.ref, 0);
-const totalNonRef = branchData.reduce((sum, b) => sum + b.nonRef, 0);
-const grandTotal = totalRef + totalNonRef;
-
-const pieData = [
-  { name: "Referral", value: totalRef, color: "hsl(var(--success))" },
-  { name: "Non-Referral", value: totalNonRef, color: "hsl(var(--chart-2))" },
-];
-
-const chartData = branchData.map(b => ({
-  name: b.branch.substring(0, 6),
-  Referral: b.ref,
-  NonRef: b.nonRef,
-}));
 
 const columns = [
   { key: "sno", label: "S.No", align: "center" },
@@ -59,6 +46,30 @@ const columns = [
 ];
 
 const RefNonRef = () => {
+  const [filters, setFilters] = useState({});
+
+  const filteredData = useMemo(() => {
+    return branchData.filter(item => {
+      if (filters.branch && filters.branch !== "all" && item.branch.toLowerCase() !== filters.branch) return false;
+      return true;
+    });
+  }, [filters]);
+
+  const totalRef = filteredData.reduce((sum, b) => sum + b.ref, 0);
+  const totalNonRef = filteredData.reduce((sum, b) => sum + b.nonRef, 0);
+  const grandTotal = totalRef + totalNonRef;
+
+  const pieData = [
+    { name: "Referral", value: totalRef, color: "hsl(var(--success))" },
+    { name: "Non-Referral", value: totalNonRef, color: "hsl(var(--chart-2))" },
+  ];
+
+  const chartData = filteredData.map(b => ({
+    name: b.branch.substring(0, 6),
+    Referral: b.ref,
+    NonRef: b.nonRef,
+  }));
+
   return (
     <DashboardLayout>
       <div className="space-y-4 md:space-y-6 animate-fade-in">
@@ -67,6 +78,13 @@ const RefNonRef = () => {
           description="Revenue breakdown by referral source across branches"
           icon={GitBranch}
           badge="Daily"
+        />
+
+        <ReportFilters
+          showBranch
+          showDateRange
+          filters={filters}
+          onFilterChange={setFilters}
         />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -183,7 +201,7 @@ const RefNonRef = () => {
           title="Branch-wise Referral Breakdown"
           subtitle="December 2025 - All amounts in Lakhs"
           columns={columns}
-          data={branchData}
+          data={filteredData}
         />
       </div>
     </DashboardLayout>

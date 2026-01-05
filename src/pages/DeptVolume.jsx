@@ -1,11 +1,12 @@
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/reports/PageHeader";
+import { ReportFilters } from "@/components/reports/ReportFilters";
 import { DataTable } from "@/components/reports/DataTable";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, TrendingUp, Activity, Users } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from "recharts";
-import { useSearchParams } from "react-router-dom";
 
 const volumeData = [
   { sno: 1, category: "RADIOLOGY", isHeader: true },
@@ -48,8 +49,6 @@ const trendData = [
   { name: "CT", oct: 1536, nov: 1610, dec: 1704 },
 ];
 
-const totalVolume = volumeData.filter(d => !d.isHeader && d.mtd).reduce((sum, d) => sum + (d.mtd || 0), 0);
-
 const columns = [
   { key: "sno", label: "S.No", align: "center" },
   { 
@@ -67,17 +66,35 @@ const columns = [
 ];
 
 const DeptVolume = () => {
-  const [searchParams] = useSearchParams();
-  const selectedDept = searchParams.get('dept');
+  const [filters, setFilters] = useState({});
+
+  const filteredData = useMemo(() => {
+    return volumeData.filter(item => {
+      if (filters.department && filters.department !== "all" && !item.isHeader) {
+        return item.department.toLowerCase().includes(filters.department);
+      }
+      return true;
+    });
+  }, [filters]);
+
+  const totalVolume = filteredData.filter(d => !d.isHeader && d.mtd).reduce((sum, d) => sum + (d.mtd || 0), 0);
 
   return (
     <DashboardLayout>
       <div className="space-y-4 md:space-y-6 animate-fade-in">
         <PageHeader
           title="Department Wise Volume"
-          description={selectedDept ? `Filtered by: ${selectedDept.toUpperCase()}` : "Patient volume summary by department and service type"}
+          description="Patient volume summary by department and service type"
           icon={BarChart3}
           badge="Daily"
+        />
+
+        <ReportFilters
+          showBranch
+          showDepartment
+          showDateRange
+          filters={filters}
+          onFilterChange={setFilters}
         />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -210,7 +227,7 @@ const DeptVolume = () => {
           title="Complete Department Volume Summary"
           subtitle="Hourly data pull - Test counts by department"
           columns={columns}
-          data={volumeData}
+          data={filteredData}
         />
       </div>
     </DashboardLayout>

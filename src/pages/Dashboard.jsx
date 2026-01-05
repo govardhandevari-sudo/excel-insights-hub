@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { BranchRevenueChart } from "@/components/dashboard/BranchRevenueChart";
@@ -8,6 +9,7 @@ import { PaymentModeChart } from "@/components/dashboard/PaymentModeChart";
 import { WeeklyTrendStackedChart } from "@/components/dashboard/WeeklyTrendStackedChart";
 import { DepartmentHeatMap } from "@/components/dashboard/DepartmentHeatMap";
 import { MonthlyTrendAreaChart } from "@/components/dashboard/MonthlyTrendAreaChart";
+import { ReportFilters } from "@/components/reports/ReportFilters";
 import { 
   TrendingUp, 
   Target, 
@@ -15,10 +17,11 @@ import {
   Building2, 
   Activity,
   ArrowUpRight,
-  Calendar
 } from "lucide-react";
 
 const Dashboard = () => {
+  const [filters, setFilters] = useState({});
+
   return (
     <DashboardLayout>
       <div className="space-y-4 md:space-y-6 animate-fade-in">
@@ -32,11 +35,16 @@ const Dashboard = () => {
               MegSan Diagnostics - December 2025 Performance Overview
             </p>
           </div>
-          <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground bg-muted px-3 py-2 rounded-lg self-start md:self-auto">
-            <Calendar className="h-3 w-3 md:h-4 md:w-4" />
-            <span>Last updated: Dec 29, 2025</span>
-          </div>
         </div>
+
+        {/* Filters */}
+        <ReportFilters
+          showBranch
+          showState
+          showDateRange
+          filters={filters}
+          onFilterChange={setFilters}
+        />
 
         {/* KPI Cards with Drill-down */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
