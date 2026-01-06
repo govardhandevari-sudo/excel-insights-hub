@@ -51,8 +51,6 @@ export function AppSidebar() {
           />
         </div>
       </SidebarHeader>
-        </div>
-      </SidebarHeader>
       
       <SidebarContent className="p-2">
         <SidebarGroup>
