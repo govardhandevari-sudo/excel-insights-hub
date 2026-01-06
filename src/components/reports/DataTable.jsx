@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 export function DataTable({ 
   title, 
@@ -22,35 +22,60 @@ export function DataTable({
   onRowClick, 
   rowClickable,
   showPagination = true,
-  showColumnFilters = true,
   defaultRowsPerPage = 10
 }) {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(defaultRowsPerPage);
-  const [columnFilters, setColumnFilters] = useState({});
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
 
-  // Filter data based on column filters
-  const filteredData = useMemo(() => {
-    if (!showColumnFilters || Object.keys(columnFilters).length === 0) {
-      return data;
-    }
+  // Global search filter
+  const searchedData = useMemo(() => {
+    if (!globalSearch.trim()) return data;
     
+    const searchLower = globalSearch.toLowerCase();
     return data.filter((row) => {
-      return Object.entries(columnFilters).every(([key, filterValue]) => {
-        if (!filterValue) return true;
-        const cellValue = String(row[key] || "").toLowerCase();
-        return cellValue.includes(filterValue.toLowerCase());
+      return columns.some((col) => {
+        const cellValue = String(row[col.key] || "").toLowerCase();
+        return cellValue.includes(searchLower);
       });
     });
-  }, [data, columnFilters, showColumnFilters]);
+  }, [data, globalSearch, columns]);
+
+  // Sorting
+  const sortedData = useMemo(() => {
+    if (!sortConfig.key || !sortConfig.direction) return searchedData;
+    
+    return [...searchedData].sort((a, b) => {
+      const aVal = a[sortConfig.key];
+      const bVal = b[sortConfig.key];
+      
+      // Handle numeric values
+      const aNum = typeof aVal === 'string' ? parseFloat(aVal.replace(/[₹,%,]/g, '')) : aVal;
+      const bNum = typeof bVal === 'string' ? parseFloat(bVal.replace(/[₹,%,]/g, '')) : bVal;
+      
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return sortConfig.direction === 'asc' ? aNum - bNum : bNum - aNum;
+      }
+      
+      // String comparison
+      const aStr = String(aVal || '').toLowerCase();
+      const bStr = String(bVal || '').toLowerCase();
+      
+      if (sortConfig.direction === 'asc') {
+        return aStr.localeCompare(bStr);
+      }
+      return bStr.localeCompare(aStr);
+    });
+  }, [searchedData, sortConfig]);
 
   // Pagination calculations
-  const totalRows = filteredData.length;
+  const totalRows = sortedData.length;
   const totalPages = Math.ceil(totalRows / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
-  const paginatedData = showPagination ? filteredData.slice(startIndex, endIndex) : filteredData;
+  const paginatedData = showPagination ? sortedData.slice(startIndex, endIndex) : sortedData;
 
   const handleRowClick = (row) => {
     if (row.drilldownUrl) {
@@ -60,20 +85,27 @@ export function DataTable({
     }
   };
 
-  const handleColumnFilterChange = (columnKey, value) => {
-    setColumnFilters(prev => ({
-      ...prev,
-      [columnKey]: value
-    }));
-    setCurrentPage(1);
+  const handleSort = (columnKey) => {
+    setSortConfig((prev) => {
+      if (prev.key !== columnKey) {
+        return { key: columnKey, direction: 'asc' };
+      }
+      if (prev.direction === 'asc') {
+        return { key: columnKey, direction: 'desc' };
+      }
+      return { key: null, direction: null };
+    });
   };
 
-  const clearColumnFilters = () => {
-    setColumnFilters({});
-    setCurrentPage(1);
+  const getSortIcon = (columnKey) => {
+    if (sortConfig.key !== columnKey) {
+      return <ArrowUpDown className="h-3 w-3 opacity-50" />;
+    }
+    if (sortConfig.direction === 'asc') {
+      return <ArrowUp className="h-3 w-3" />;
+    }
+    return <ArrowDown className="h-3 w-3" />;
   };
-
-  const hasActiveFilters = Object.values(columnFilters).some(v => v);
 
   const goToPage = (page) => {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
@@ -84,25 +116,32 @@ export function DataTable({
     setCurrentPage(1);
   };
 
+  const handleSearchChange = (value) => {
+    setGlobalSearch(value);
+    setCurrentPage(1);
+  };
+
   return (
     <Card className={cn("shadow-card", className)}>
       <CardHeader className="pb-3">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div>
-            <CardTitle className="font-heading text-base md:text-lg">{title}</CardTitle>
-            {subtitle && <p className="text-xs md:text-sm text-muted-foreground mt-1">{subtitle}</p>}
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <CardTitle className="font-heading text-base md:text-lg">{title}</CardTitle>
+              {subtitle && <p className="text-xs md:text-sm text-muted-foreground mt-1">{subtitle}</p>}
+            </div>
           </div>
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearColumnFilters}
-              className="h-8 px-2 text-muted-foreground hover:text-foreground self-start sm:self-auto"
-            >
-              <X className="h-4 w-4 mr-1" />
-              Clear filters
-            </Button>
-          )}
+          
+          {/* Global Search */}
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search in table..."
+              value={globalSearch}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-9 h-9 bg-background border-input"
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-0">
@@ -117,32 +156,22 @@ export function DataTable({
                       "px-3 md:px-4 py-2 md:py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap",
                       col.align === "center" && "text-center",
                       col.align === "right" && "text-right",
-                      !col.align && "text-left"
+                      !col.align && "text-left",
+                      col.sortable !== false && "cursor-pointer hover:bg-muted/70 transition-colors select-none"
                     )}
+                    onClick={() => col.sortable !== false && handleSort(col.key)}
                   >
-                    {col.label}
+                    <div className={cn(
+                      "flex items-center gap-1",
+                      col.align === "center" && "justify-center",
+                      col.align === "right" && "justify-end"
+                    )}>
+                      {col.label}
+                      {col.sortable !== false && getSortIcon(col.key)}
+                    </div>
                   </th>
                 ))}
               </tr>
-              {showColumnFilters && (
-                <tr className="border-b border-border bg-muted/30">
-                  {columns.map((col) => (
-                    <th key={`filter-${col.key}`} className="px-2 md:px-3 py-2">
-                      {col.filterable !== false && (
-                        <div className="relative">
-                          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                          <Input
-                            placeholder="Filter..."
-                            value={columnFilters[col.key] || ""}
-                            onChange={(e) => handleColumnFilterChange(col.key, e.target.value)}
-                            className="h-7 pl-7 pr-2 text-xs bg-background border-input w-full min-w-[80px]"
-                          />
-                        </div>
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              )}
             </thead>
             <tbody>
               {paginatedData.length === 0 ? (

@@ -42,14 +42,12 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
-      <SidebarHeader className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <img 
-            src={logo} 
-            alt="Focus Diagnostics Logo" 
-            className={isCollapsed ? "h-10 w-auto object-contain" : "h-12 w-auto object-contain"}
-          />
-        </div>
+      <SidebarHeader className="h-16 p-2 border-b border-sidebar-border bg-white flex items-center justify-center">
+        <img 
+          src={logo} 
+          alt="Focus Diagnostics Logo" 
+          className="h-10 w-auto object-contain"
+        />
       </SidebarHeader>
       
       <SidebarContent className="p-2">
