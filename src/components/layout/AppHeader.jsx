@@ -18,7 +18,7 @@ export function AppHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 h-16 bg-card border-b border-border flex items-center justify-between px-4 md:px-6">
+    <header className="sticky top-0 z-40 h-16 bg-card border-b border-border flex items-center justify-between px-4 md:px-6">
       <div className="flex items-center gap-4">
         <SidebarTrigger className="h-9 w-9" />
         <div className="hidden md:flex items-center gap-2 bg-muted rounded-lg px-3 py-2">

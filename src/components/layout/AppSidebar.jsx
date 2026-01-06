@@ -10,7 +10,7 @@ import {
   BarChart3
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/focus-diagnostics-logo.png";
 import {
   Sidebar,
   SidebarContent,
@@ -46,19 +46,11 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <img 
             src={logo} 
-            alt="MegSan Logo" 
-            className="w-10 h-10 rounded-lg object-cover"
+            alt="Focus Diagnostics Logo" 
+            className={isCollapsed ? "h-10 w-auto object-contain" : "h-12 w-auto object-contain"}
           />
-          {!isCollapsed && (
-            <div className="flex flex-col">
-              <span className="font-heading font-bold text-sidebar-foreground text-lg">
-                MegSan
-              </span>
-              <span className="text-xs text-sidebar-foreground/60">
-                Diagnostics
-              </span>
-            </div>
-          )}
+        </div>
+      </SidebarHeader>
         </div>
       </SidebarHeader>
       
