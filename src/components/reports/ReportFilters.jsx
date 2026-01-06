@@ -85,33 +85,33 @@ export function ReportFilters({
   filters = {},
   onFilterChange,
 }) {
-  const [dateFrom, setDateFrom] = useState(filters.dateFrom || null);
-  const [dateTo, setDateTo] = useState(filters.dateTo || null);
+  const [dateRange, setDateRange] = useState({
+    from: filters.dateFrom || undefined,
+    to: filters.dateTo || undefined,
+  });
 
   const handleFilterChange = (key, value) => {
     onFilterChange?.({ ...filters, [key]: value });
   };
 
-  const handleDateFromChange = (date) => {
-    setDateFrom(date);
-    onFilterChange?.({ ...filters, dateFrom: date });
-  };
-
-  const handleDateToChange = (date) => {
-    setDateTo(date);
-    onFilterChange?.({ ...filters, dateTo: date });
+  const handleDateRangeChange = (range) => {
+    setDateRange(range || { from: undefined, to: undefined });
+    onFilterChange?.({ 
+      ...filters, 
+      dateFrom: range?.from || null, 
+      dateTo: range?.to || null 
+    });
   };
 
   const clearFilters = () => {
-    setDateFrom(null);
-    setDateTo(null);
+    setDateRange({ from: undefined, to: undefined });
     onFilterChange?.({});
   };
 
   const hasActiveFilters = Object.values(filters).some(v => v && v !== "all");
 
   return (
-    <div className="flex flex-wrap gap-2 md:gap-3 items-center p-3 md:p-4 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex flex-wrap gap-2 md:gap-3 items-center p-3 md:p-4 bg-card rounded-lg border border-border shadow-sm">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Filter className="h-4 w-4" />
         <span className="hidden sm:inline font-medium">Filters:</span>
@@ -122,10 +122,10 @@ export function ReportFilters({
           value={filters.state || "all"}
           onValueChange={(v) => handleFilterChange("state", v)}
         >
-          <SelectTrigger className="w-[130px] md:w-[150px] h-9 text-sm bg-background">
+          <SelectTrigger className="w-[130px] md:w-[150px] h-9 text-sm bg-background border-input">
             <SelectValue placeholder="State" />
           </SelectTrigger>
-          <SelectContent className="bg-background border-border z-50">
+          <SelectContent className="bg-popover border-border z-[100]">
             {states.map((s) => (
               <SelectItem key={s.value} value={s.value}>
                 {s.label}
@@ -140,10 +140,10 @@ export function ReportFilters({
           value={filters.branch || "all"}
           onValueChange={(v) => handleFilterChange("branch", v)}
         >
-          <SelectTrigger className="w-[130px] md:w-[150px] h-9 text-sm bg-background">
+          <SelectTrigger className="w-[130px] md:w-[150px] h-9 text-sm bg-background border-input">
             <SelectValue placeholder="Branch" />
           </SelectTrigger>
-          <SelectContent className="bg-background border-border z-50">
+          <SelectContent className="bg-popover border-border z-[100]">
             {branches.map((b) => (
               <SelectItem key={b.value} value={b.value}>
                 {b.label}
@@ -158,10 +158,10 @@ export function ReportFilters({
           value={filters.salesperson || "all"}
           onValueChange={(v) => handleFilterChange("salesperson", v)}
         >
-          <SelectTrigger className="w-[140px] md:w-[160px] h-9 text-sm bg-background">
+          <SelectTrigger className="w-[140px] md:w-[160px] h-9 text-sm bg-background border-input">
             <SelectValue placeholder="Salesperson" />
           </SelectTrigger>
-          <SelectContent className="bg-background border-border z-50">
+          <SelectContent className="bg-popover border-border z-[100]">
             {salespersons.map((s) => (
               <SelectItem key={s.value} value={s.value}>
                 {s.label}
@@ -176,10 +176,10 @@ export function ReportFilters({
           value={filters.department || "all"}
           onValueChange={(v) => handleFilterChange("department", v)}
         >
-          <SelectTrigger className="w-[140px] md:w-[160px] h-9 text-sm bg-background">
+          <SelectTrigger className="w-[140px] md:w-[160px] h-9 text-sm bg-background border-input">
             <SelectValue placeholder="Department" />
           </SelectTrigger>
-          <SelectContent className="bg-background border-border z-50">
+          <SelectContent className="bg-popover border-border z-[100]">
             {departments.map((d) => (
               <SelectItem key={d.value} value={d.value}>
                 {d.label}
@@ -194,10 +194,10 @@ export function ReportFilters({
           value={filters.paymentMode || "all"}
           onValueChange={(v) => handleFilterChange("paymentMode", v)}
         >
-          <SelectTrigger className="w-[150px] md:w-[170px] h-9 text-sm bg-background">
+          <SelectTrigger className="w-[150px] md:w-[170px] h-9 text-sm bg-background border-input">
             <SelectValue placeholder="Payment Mode" />
           </SelectTrigger>
-          <SelectContent className="bg-background border-border z-50">
+          <SelectContent className="bg-popover border-border z-[100]">
             {paymentModes.map((p) => (
               <SelectItem key={p.value} value={p.value}>
                 {p.label}
@@ -208,55 +208,40 @@ export function ReportFilters({
       )}
 
       {showDateRange && (
-        <>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-[120px] md:w-[140px] h-9 justify-start text-left text-sm font-normal bg-background",
-                  !dateFrom && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateFrom ? format(dateFrom, "dd MMM") : "From"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-background border-border z-50" align="start">
-              <Calendar
-                mode="single"
-                selected={dateFrom}
-                onSelect={handleDateFromChange}
-                initialFocus
-                className="pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-[120px] md:w-[140px] h-9 justify-start text-left text-sm font-normal bg-background",
-                  !dateTo && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateTo ? format(dateTo, "dd MMM") : "To"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-background border-border z-50" align="start">
-              <Calendar
-                mode="single"
-                selected={dateTo}
-                onSelect={handleDateToChange}
-                initialFocus
-                className="pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
-        </>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-[200px] md:w-[280px] h-9 justify-start text-left text-sm font-normal bg-background border-input",
+                !dateRange.from && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {dateRange.from ? (
+                dateRange.to ? (
+                  <>
+                    {format(dateRange.from, "dd MMM yyyy")} - {format(dateRange.to, "dd MMM yyyy")}
+                  </>
+                ) : (
+                  format(dateRange.from, "dd MMM yyyy")
+                )
+              ) : (
+                "Select date range"
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 bg-popover border-border z-[100]" align="start">
+            <Calendar
+              mode="range"
+              selected={dateRange}
+              onSelect={handleDateRangeChange}
+              numberOfMonths={2}
+              initialFocus
+              className="pointer-events-auto p-3"
+            />
+          </PopoverContent>
+        </Popover>
       )}
 
       {hasActiveFilters && (
