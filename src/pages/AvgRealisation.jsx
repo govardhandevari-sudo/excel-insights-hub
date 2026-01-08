@@ -9,18 +9,18 @@ import { Users, TrendingUp, TrendingDown, Target } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from "recharts";
 
 const branchData = [
-  { sno: 1, branch: "Punjagutta", labAvg: 1850, radAvg: 3200, totalAvg: 2475, nov: 2350, oct: 2280, bdHead: "Nagesh", drilldownUrl: "/salesperson?branch=punjagutta" },
-  { sno: 2, branch: "Kompally", labAvg: 1650, radAvg: 2950, totalAvg: 2250, nov: 2180, oct: 2100, bdHead: "Ganesh/Rakesh", drilldownUrl: "/salesperson?branch=kompally" },
-  { sno: 3, branch: "KPHB", labAvg: 1780, radAvg: 3100, totalAvg: 2380, nov: 2290, oct: 2200, bdHead: "Prasanth", drilldownUrl: "/salesperson?branch=kphb" },
-  { sno: 4, branch: "MBNR", labAvg: 1450, radAvg: 2650, totalAvg: 1980, nov: 1890, oct: 1820, bdHead: "Ramakrishna", drilldownUrl: "/salesperson?branch=mbnr" },
-  { sno: 5, branch: "Sangareddy", labAvg: 1380, radAvg: 2480, totalAvg: 1850, nov: 1780, oct: 1720, bdHead: "Murali", drilldownUrl: "/salesperson?branch=sangareddy" },
-  { sno: 6, branch: "Nalgonda", labAvg: 1320, radAvg: 2350, totalAvg: 1750, nov: 1680, oct: 1620, bdHead: "Mallikarjun", drilldownUrl: "/salesperson?branch=nalgonda" },
-  { sno: 7, branch: "Nizamabad", labAvg: 1420, radAvg: 2580, totalAvg: 1920, nov: 1850, oct: 1780, bdHead: "Uma", drilldownUrl: "/salesperson?branch=nizamabad" },
-  { sno: 8, branch: "Medak", labAvg: 1280, radAvg: 2280, totalAvg: 1680, nov: 1620, oct: 1560, bdHead: "Srinivas E", drilldownUrl: "/salesperson?branch=medak" },
-  { sno: 9, branch: "Santhanu", labAvg: 1250, radAvg: 2180, totalAvg: 1620, nov: 1560, oct: 1500, bdHead: "Sujeeth", drilldownUrl: "/salesperson?branch=santhanu" },
-  { sno: 10, branch: "Jagtial", labAvg: 1350, radAvg: 2420, totalAvg: 1800, nov: 1730, oct: 1670, bdHead: "Dr. Sujith", drilldownUrl: "/salesperson?branch=jagtial" },
-  { sno: 11, branch: "Rajahmundry", labAvg: 1580, radAvg: 2850, totalAvg: 2150, nov: 2080, oct: 2000, bdHead: "Satish", drilldownUrl: "/salesperson?branch=rajahmundry" },
-  { sno: 12, branch: "Bangalore", labAvg: 2100, radAvg: 3500, totalAvg: 2750, nov: 2650, oct: 2550, bdHead: "Dr. Sreenath", drilldownUrl: "/salesperson?branch=bangalore" },
+  { sno: 1, branch: "Punjagutta", labAvg: 1850, radAvg: 3200, totalAvg: 2475, nov: 2350, oct: 2280, bdHead: "Nagesh", drilldownUrl: "/salesperson?branch=punjagutta", date: new Date(2025, 11, 15) },
+  { sno: 2, branch: "Kompally", labAvg: 1650, radAvg: 2950, totalAvg: 2250, nov: 2180, oct: 2100, bdHead: "Ganesh/Rakesh", drilldownUrl: "/salesperson?branch=kompally", date: new Date(2025, 11, 14) },
+  { sno: 3, branch: "KPHB", labAvg: 1780, radAvg: 3100, totalAvg: 2380, nov: 2290, oct: 2200, bdHead: "Prasanth", drilldownUrl: "/salesperson?branch=kphb", date: new Date(2025, 11, 13) },
+  { sno: 4, branch: "MBNR", labAvg: 1450, radAvg: 2650, totalAvg: 1980, nov: 1890, oct: 1820, bdHead: "Ramakrishna", drilldownUrl: "/salesperson?branch=mbnr", date: new Date(2025, 11, 12) },
+  { sno: 5, branch: "Sangareddy", labAvg: 1380, radAvg: 2480, totalAvg: 1850, nov: 1780, oct: 1720, bdHead: "Murali", drilldownUrl: "/salesperson?branch=sangareddy", date: new Date(2025, 11, 11) },
+  { sno: 6, branch: "Nalgonda", labAvg: 1320, radAvg: 2350, totalAvg: 1750, nov: 1680, oct: 1620, bdHead: "Mallikarjun", drilldownUrl: "/salesperson?branch=nalgonda", date: new Date(2025, 11, 10) },
+  { sno: 7, branch: "Nizamabad", labAvg: 1420, radAvg: 2580, totalAvg: 1920, nov: 1850, oct: 1780, bdHead: "Uma", drilldownUrl: "/salesperson?branch=nizamabad", date: new Date(2025, 11, 9) },
+  { sno: 8, branch: "Medak", labAvg: 1280, radAvg: 2280, totalAvg: 1680, nov: 1620, oct: 1560, bdHead: "Srinivas E", drilldownUrl: "/salesperson?branch=medak", date: new Date(2025, 11, 8) },
+  { sno: 9, branch: "Santhanu", labAvg: 1250, radAvg: 2180, totalAvg: 1620, nov: 1560, oct: 1500, bdHead: "Sujeeth", drilldownUrl: "/salesperson?branch=santhanu", date: new Date(2025, 11, 7) },
+  { sno: 10, branch: "Jagtial", labAvg: 1350, radAvg: 2420, totalAvg: 1800, nov: 1730, oct: 1670, bdHead: "Dr. Sujith", drilldownUrl: "/salesperson?branch=jagtial", date: new Date(2025, 11, 6) },
+  { sno: 11, branch: "Rajahmundry", labAvg: 1580, radAvg: 2850, totalAvg: 2150, nov: 2080, oct: 2000, bdHead: "Satish", drilldownUrl: "/salesperson?branch=rajahmundry", date: new Date(2025, 11, 5) },
+  { sno: 12, branch: "Bangalore", labAvg: 2100, radAvg: 3500, totalAvg: 2750, nov: 2650, oct: 2550, bdHead: "Dr. Sreenath", drilldownUrl: "/salesperson?branch=bangalore", date: new Date(2025, 11, 4) },
 ];
 
 const AvgRealisation = () => {
@@ -29,6 +29,8 @@ const AvgRealisation = () => {
   const filteredData = useMemo(() => {
     return branchData.filter(item => {
       if (filters.branch && filters.branch !== "all" && item.branch.toLowerCase() !== filters.branch) return false;
+      if (filters.dateFrom && item.date < new Date(filters.dateFrom)) return false;
+      if (filters.dateTo && item.date > new Date(filters.dateTo)) return false;
       return true;
     });
   }, [filters]);

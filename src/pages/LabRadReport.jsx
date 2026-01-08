@@ -10,18 +10,18 @@ import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const branchData = [
-  { sno: 1, branch: "Punjagutta", labMTD: 24.4, labPct: 23, radMTD: 79.7, radPct: 77, total: 104.1, bdHead: "Nagesh", drilldownUrl: "/dept-revenue?branch=punjagutta" },
-  { sno: 2, branch: "Kompally", labMTD: 44.6, labPct: 42, radMTD: 62.4, radPct: 58, total: 107.1, bdHead: "Ganesh/Rakesh", drilldownUrl: "/dept-revenue?branch=kompally" },
-  { sno: 3, branch: "KPHB", labMTD: 20.9, labPct: 23, radMTD: 69.4, radPct: 77, total: 90.3, bdHead: "Prasanth", drilldownUrl: "/dept-revenue?branch=kphb" },
-  { sno: 4, branch: "MBNR", labMTD: 12.5, labPct: 35, radMTD: 23.2, radPct: 65, total: 35.7, bdHead: "Ramakrishna", drilldownUrl: "/dept-revenue?branch=mbnr" },
-  { sno: 5, branch: "Sangareddy", labMTD: 8.2, labPct: 28, radMTD: 21.0, radPct: 72, total: 29.2, bdHead: "Murali", drilldownUrl: "/dept-revenue?branch=sangareddy" },
-  { sno: 6, branch: "Nalgonda", labMTD: 6.8, labPct: 32, radMTD: 14.5, radPct: 68, total: 21.3, bdHead: "Mallikarjun", drilldownUrl: "/dept-revenue?branch=nalgonda" },
-  { sno: 7, branch: "Nizamabad", labMTD: 9.5, labPct: 30, radMTD: 22.1, radPct: 70, total: 31.6, bdHead: "Uma", drilldownUrl: "/dept-revenue?branch=nizamabad" },
-  { sno: 8, branch: "Medak", labMTD: 5.2, labPct: 26, radMTD: 14.8, radPct: 74, total: 20.0, bdHead: "Srinivas E", drilldownUrl: "/dept-revenue?branch=medak" },
-  { sno: 9, branch: "Santhanu", labMTD: 4.1, labPct: 29, radMTD: 10.1, radPct: 71, total: 14.2, bdHead: "Sujeeth", drilldownUrl: "/dept-revenue?branch=santhanu" },
-  { sno: 10, branch: "Jagtial", labMTD: 6.9, labPct: 33, radMTD: 14.0, radPct: 67, total: 20.9, bdHead: "Dr. Sujith", drilldownUrl: "/dept-revenue?branch=jagtial" },
-  { sno: 11, branch: "Rajahmundry", labMTD: 15.2, labPct: 38, radMTD: 24.8, radPct: 62, total: 40.0, bdHead: "Satish", drilldownUrl: "/dept-revenue?branch=rajahmundry" },
-  { sno: 12, branch: "Bangalore", labMTD: 52.6, labPct: 50, radMTD: 52.6, radPct: 50, total: 105.2, bdHead: "Dr. Sreenath", drilldownUrl: "/dept-revenue?branch=bangalore" },
+  { sno: 1, branch: "Punjagutta", labMTD: 24.4, labPct: 23, radMTD: 79.7, radPct: 77, total: 104.1, bdHead: "Nagesh", drilldownUrl: "/dept-revenue?branch=punjagutta", date: new Date(2025, 11, 15) },
+  { sno: 2, branch: "Kompally", labMTD: 44.6, labPct: 42, radMTD: 62.4, radPct: 58, total: 107.1, bdHead: "Ganesh/Rakesh", drilldownUrl: "/dept-revenue?branch=kompally", date: new Date(2025, 11, 14) },
+  { sno: 3, branch: "KPHB", labMTD: 20.9, labPct: 23, radMTD: 69.4, radPct: 77, total: 90.3, bdHead: "Prasanth", drilldownUrl: "/dept-revenue?branch=kphb", date: new Date(2025, 11, 13) },
+  { sno: 4, branch: "MBNR", labMTD: 12.5, labPct: 35, radMTD: 23.2, radPct: 65, total: 35.7, bdHead: "Ramakrishna", drilldownUrl: "/dept-revenue?branch=mbnr", date: new Date(2025, 11, 12) },
+  { sno: 5, branch: "Sangareddy", labMTD: 8.2, labPct: 28, radMTD: 21.0, radPct: 72, total: 29.2, bdHead: "Murali", drilldownUrl: "/dept-revenue?branch=sangareddy", date: new Date(2025, 11, 11) },
+  { sno: 6, branch: "Nalgonda", labMTD: 6.8, labPct: 32, radMTD: 14.5, radPct: 68, total: 21.3, bdHead: "Mallikarjun", drilldownUrl: "/dept-revenue?branch=nalgonda", date: new Date(2025, 11, 10) },
+  { sno: 7, branch: "Nizamabad", labMTD: 9.5, labPct: 30, radMTD: 22.1, radPct: 70, total: 31.6, bdHead: "Uma", drilldownUrl: "/dept-revenue?branch=nizamabad", date: new Date(2025, 11, 9) },
+  { sno: 8, branch: "Medak", labMTD: 5.2, labPct: 26, radMTD: 14.8, radPct: 74, total: 20.0, bdHead: "Srinivas E", drilldownUrl: "/dept-revenue?branch=medak", date: new Date(2025, 11, 8) },
+  { sno: 9, branch: "Santhanu", labMTD: 4.1, labPct: 29, radMTD: 10.1, radPct: 71, total: 14.2, bdHead: "Sujeeth", drilldownUrl: "/dept-revenue?branch=santhanu", date: new Date(2025, 11, 7) },
+  { sno: 10, branch: "Jagtial", labMTD: 6.9, labPct: 33, radMTD: 14.0, radPct: 67, total: 20.9, bdHead: "Dr. Sujith", drilldownUrl: "/dept-revenue?branch=jagtial", date: new Date(2025, 11, 6) },
+  { sno: 11, branch: "Rajahmundry", labMTD: 15.2, labPct: 38, radMTD: 24.8, radPct: 62, total: 40.0, bdHead: "Satish", drilldownUrl: "/dept-revenue?branch=rajahmundry", date: new Date(2025, 11, 5) },
+  { sno: 12, branch: "Bangalore", labMTD: 52.6, labPct: 50, radMTD: 52.6, radPct: 50, total: 105.2, bdHead: "Dr. Sreenath", drilldownUrl: "/dept-revenue?branch=bangalore", date: new Date(2025, 11, 4) },
 ];
 
 const columns = [
@@ -51,6 +51,8 @@ const LabRadReport = () => {
   const filteredData = useMemo(() => {
     return branchData.filter(item => {
       if (filters.branch && filters.branch !== "all" && item.branch.toLowerCase() !== filters.branch) return false;
+      if (filters.dateFrom && item.date < new Date(filters.dateFrom)) return false;
+      if (filters.dateTo && item.date > new Date(filters.dateTo)) return false;
       return true;
     });
   }, [filters]);

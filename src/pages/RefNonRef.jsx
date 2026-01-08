@@ -10,18 +10,18 @@ import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const branchData = [
-  { sno: 1, branch: "Punjagutta", ref: 72.5, refPct: 70, nonRef: 31.6, nonRefPct: 30, total: 104.1, bdHead: "Nagesh" },
-  { sno: 2, branch: "Kompally", ref: 68.6, refPct: 64, nonRef: 38.5, nonRefPct: 36, total: 107.1, bdHead: "Ganesh/Rakesh" },
-  { sno: 3, branch: "KPHB", ref: 60.5, refPct: 67, nonRef: 29.8, nonRefPct: 33, total: 90.3, bdHead: "Prasanth" },
-  { sno: 4, branch: "MBNR", ref: 23.2, refPct: 65, nonRef: 12.5, nonRefPct: 35, total: 35.7, bdHead: "Ramakrishna" },
-  { sno: 5, branch: "Sangareddy", ref: 19.0, refPct: 65, nonRef: 10.2, nonRefPct: 35, total: 29.2, bdHead: "Murali" },
-  { sno: 6, branch: "Nalgonda", ref: 13.9, refPct: 65, nonRef: 7.4, nonRefPct: 35, total: 21.3, bdHead: "Mallikarjun" },
-  { sno: 7, branch: "Nizamabad", ref: 21.2, refPct: 67, nonRef: 10.4, nonRefPct: 33, total: 31.6, bdHead: "Uma" },
-  { sno: 8, branch: "Medak", ref: 13.0, refPct: 65, nonRef: 7.0, nonRefPct: 35, total: 20.0, bdHead: "Srinivas E" },
-  { sno: 9, branch: "Santhanu", ref: 9.2, refPct: 65, nonRef: 5.0, nonRefPct: 35, total: 14.2, bdHead: "Sujeeth" },
-  { sno: 10, branch: "Jagtial", ref: 14.0, refPct: 67, nonRef: 6.9, nonRefPct: 33, total: 20.9, bdHead: "Dr. Sujith" },
-  { sno: 11, branch: "Rajahmundry", ref: 26.8, refPct: 67, nonRef: 13.2, nonRefPct: 33, total: 40.0, bdHead: "Satish" },
-  { sno: 12, branch: "Bangalore", ref: 68.4, refPct: 65, nonRef: 36.8, nonRefPct: 35, total: 105.2, bdHead: "Dr. Sreenath" },
+  { sno: 1, branch: "Punjagutta", ref: 72.5, refPct: 70, nonRef: 31.6, nonRefPct: 30, total: 104.1, bdHead: "Nagesh", date: new Date(2025, 11, 15) },
+  { sno: 2, branch: "Kompally", ref: 68.6, refPct: 64, nonRef: 38.5, nonRefPct: 36, total: 107.1, bdHead: "Ganesh/Rakesh", date: new Date(2025, 11, 14) },
+  { sno: 3, branch: "KPHB", ref: 60.5, refPct: 67, nonRef: 29.8, nonRefPct: 33, total: 90.3, bdHead: "Prasanth", date: new Date(2025, 11, 13) },
+  { sno: 4, branch: "MBNR", ref: 23.2, refPct: 65, nonRef: 12.5, nonRefPct: 35, total: 35.7, bdHead: "Ramakrishna", date: new Date(2025, 11, 12) },
+  { sno: 5, branch: "Sangareddy", ref: 19.0, refPct: 65, nonRef: 10.2, nonRefPct: 35, total: 29.2, bdHead: "Murali", date: new Date(2025, 11, 11) },
+  { sno: 6, branch: "Nalgonda", ref: 13.9, refPct: 65, nonRef: 7.4, nonRefPct: 35, total: 21.3, bdHead: "Mallikarjun", date: new Date(2025, 11, 10) },
+  { sno: 7, branch: "Nizamabad", ref: 21.2, refPct: 67, nonRef: 10.4, nonRefPct: 33, total: 31.6, bdHead: "Uma", date: new Date(2025, 11, 9) },
+  { sno: 8, branch: "Medak", ref: 13.0, refPct: 65, nonRef: 7.0, nonRefPct: 35, total: 20.0, bdHead: "Srinivas E", date: new Date(2025, 11, 8) },
+  { sno: 9, branch: "Santhanu", ref: 9.2, refPct: 65, nonRef: 5.0, nonRefPct: 35, total: 14.2, bdHead: "Sujeeth", date: new Date(2025, 11, 7) },
+  { sno: 10, branch: "Jagtial", ref: 14.0, refPct: 67, nonRef: 6.9, nonRefPct: 33, total: 20.9, bdHead: "Dr. Sujith", date: new Date(2025, 11, 6) },
+  { sno: 11, branch: "Rajahmundry", ref: 26.8, refPct: 67, nonRef: 13.2, nonRefPct: 33, total: 40.0, bdHead: "Satish", date: new Date(2025, 11, 5) },
+  { sno: 12, branch: "Bangalore", ref: 68.4, refPct: 65, nonRef: 36.8, nonRefPct: 35, total: 105.2, bdHead: "Dr. Sreenath", date: new Date(2025, 11, 4) },
 ];
 
 const columns = [
@@ -51,6 +51,8 @@ const RefNonRef = () => {
   const filteredData = useMemo(() => {
     return branchData.filter(item => {
       if (filters.branch && filters.branch !== "all" && item.branch.toLowerCase() !== filters.branch) return false;
+      if (filters.dateFrom && item.date < new Date(filters.dateFrom)) return false;
+      if (filters.dateTo && item.date > new Date(filters.dateTo)) return false;
       return true;
     });
   }, [filters]);
