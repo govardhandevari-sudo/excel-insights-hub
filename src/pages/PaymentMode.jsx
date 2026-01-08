@@ -10,18 +10,18 @@ import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const branchData = [
-  { sno: 1, branch: "Punjagutta", credit: 35.2, creditPct: 34, upiCards: 48.5, upiCardsPct: 47, cash: 20.4, cashPct: 19, total: 104.1 },
-  { sno: 2, branch: "Kompally", credit: 32.1, creditPct: 30, upiCards: 53.6, upiCardsPct: 50, cash: 21.4, cashPct: 20, total: 107.1 },
-  { sno: 3, branch: "KPHB", credit: 27.1, creditPct: 30, upiCards: 45.2, upiCardsPct: 50, cash: 18.0, cashPct: 20, total: 90.3 },
-  { sno: 4, branch: "MBNR", credit: 10.7, creditPct: 30, upiCards: 16.1, upiCardsPct: 45, cash: 8.9, cashPct: 25, total: 35.7 },
-  { sno: 5, branch: "Sangareddy", credit: 8.2, creditPct: 28, upiCards: 13.1, upiCardsPct: 45, cash: 7.9, cashPct: 27, total: 29.2 },
-  { sno: 6, branch: "Nalgonda", credit: 5.5, creditPct: 26, upiCards: 10.0, upiCardsPct: 47, cash: 5.8, cashPct: 27, total: 21.3 },
-  { sno: 7, branch: "Nizamabad", credit: 9.5, creditPct: 30, upiCards: 14.2, upiCardsPct: 45, cash: 7.9, cashPct: 25, total: 31.6 },
-  { sno: 8, branch: "Medak", credit: 5.6, creditPct: 28, upiCards: 9.0, upiCardsPct: 45, cash: 5.4, cashPct: 27, total: 20.0 },
-  { sno: 9, branch: "Santhanu", credit: 3.7, creditPct: 26, upiCards: 6.5, upiCardsPct: 46, cash: 4.0, cashPct: 28, total: 14.2 },
-  { sno: 10, branch: "Jagtial", credit: 5.9, creditPct: 28, upiCards: 9.6, upiCardsPct: 46, cash: 5.4, cashPct: 26, total: 20.9 },
-  { sno: 11, branch: "Rajahmundry", credit: 12.0, creditPct: 30, upiCards: 18.0, upiCardsPct: 45, cash: 10.0, cashPct: 25, total: 40.0 },
-  { sno: 12, branch: "Bangalore", credit: 36.8, creditPct: 35, upiCards: 47.4, upiCardsPct: 45, cash: 21.0, cashPct: 20, total: 105.2 },
+  { sno: 1, branch: "Punjagutta", credit: 35.2, creditPct: 34, upiCards: 48.5, upiCardsPct: 47, cash: 20.4, cashPct: 19, total: 104.1, date: new Date(2025, 11, 15) },
+  { sno: 2, branch: "Kompally", credit: 32.1, creditPct: 30, upiCards: 53.6, upiCardsPct: 50, cash: 21.4, cashPct: 20, total: 107.1, date: new Date(2025, 11, 14) },
+  { sno: 3, branch: "KPHB", credit: 27.1, creditPct: 30, upiCards: 45.2, upiCardsPct: 50, cash: 18.0, cashPct: 20, total: 90.3, date: new Date(2025, 11, 13) },
+  { sno: 4, branch: "MBNR", credit: 10.7, creditPct: 30, upiCards: 16.1, upiCardsPct: 45, cash: 8.9, cashPct: 25, total: 35.7, date: new Date(2025, 11, 12) },
+  { sno: 5, branch: "Sangareddy", credit: 8.2, creditPct: 28, upiCards: 13.1, upiCardsPct: 45, cash: 7.9, cashPct: 27, total: 29.2, date: new Date(2025, 11, 11) },
+  { sno: 6, branch: "Nalgonda", credit: 5.5, creditPct: 26, upiCards: 10.0, upiCardsPct: 47, cash: 5.8, cashPct: 27, total: 21.3, date: new Date(2025, 11, 10) },
+  { sno: 7, branch: "Nizamabad", credit: 9.5, creditPct: 30, upiCards: 14.2, upiCardsPct: 45, cash: 7.9, cashPct: 25, total: 31.6, date: new Date(2025, 11, 9) },
+  { sno: 8, branch: "Medak", credit: 5.6, creditPct: 28, upiCards: 9.0, upiCardsPct: 45, cash: 5.4, cashPct: 27, total: 20.0, date: new Date(2025, 11, 8) },
+  { sno: 9, branch: "Santhanu", credit: 3.7, creditPct: 26, upiCards: 6.5, upiCardsPct: 46, cash: 4.0, cashPct: 28, total: 14.2, date: new Date(2025, 11, 7) },
+  { sno: 10, branch: "Jagtial", credit: 5.9, creditPct: 28, upiCards: 9.6, upiCardsPct: 46, cash: 5.4, cashPct: 26, total: 20.9, date: new Date(2025, 11, 6) },
+  { sno: 11, branch: "Rajahmundry", credit: 12.0, creditPct: 30, upiCards: 18.0, upiCardsPct: 45, cash: 10.0, cashPct: 25, total: 40.0, date: new Date(2025, 11, 5) },
+  { sno: 12, branch: "Bangalore", credit: 36.8, creditPct: 35, upiCards: 47.4, upiCardsPct: 45, cash: 21.0, cashPct: 20, total: 105.2, date: new Date(2025, 11, 4) },
 ];
 
 const columns = [
@@ -57,10 +57,8 @@ const PaymentMode = () => {
   const filteredData = useMemo(() => {
     return branchData.filter(item => {
       if (filters.branch && filters.branch !== "all" && item.branch.toLowerCase() !== filters.branch) return false;
-      if (filters.paymentMode && filters.paymentMode !== "all") {
-        // This would filter by payment mode if we had individual transactions
-        // For now, we show all data since this is aggregated
-      }
+      if (filters.dateFrom && item.date < new Date(filters.dateFrom)) return false;
+      if (filters.dateTo && item.date > new Date(filters.dateTo)) return false;
       return true;
     });
   }, [filters]);

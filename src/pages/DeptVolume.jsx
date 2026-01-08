@@ -10,27 +10,27 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 const volumeData = [
   { sno: 1, category: "RADIOLOGY", isHeader: true },
-  { sno: "", department: "MRI", w52: 285, w51: 262, w50: 278, mtd: 1085, nov: 1023, oct: 985 },
-  { sno: "", department: "CT SCAN", w52: 445, w51: 416, w50: 430, mtd: 1704, nov: 1610, oct: 1536 },
-  { sno: "", department: "ULTRASOUND", w52: 620, w51: 573, w50: 600, mtd: 2350, nov: 2227, oct: 2140 },
-  { sno: "", department: "DOPPLER", w52: 164, w51: 150, w50: 160, mtd: 624, nov: 590, oct: 560 },
-  { sno: "", department: "MAMMOGRAPHY", w52: 116, w51: 104, w50: 110, mtd: 440, nov: 416, oct: 390 },
-  { sno: "", department: "XRAY", w52: 830, w51: 787, w50: 813, mtd: 3167, nov: 3000, oct: 2880 },
+  { sno: "", department: "MRI", w52: 285, w51: 262, w50: 278, mtd: 1085, nov: 1023, oct: 985, date: new Date(2025, 11, 15) },
+  { sno: "", department: "CT SCAN", w52: 445, w51: 416, w50: 430, mtd: 1704, nov: 1610, oct: 1536, date: new Date(2025, 11, 14) },
+  { sno: "", department: "ULTRASOUND", w52: 620, w51: 573, w50: 600, mtd: 2350, nov: 2227, oct: 2140, date: new Date(2025, 11, 13) },
+  { sno: "", department: "DOPPLER", w52: 164, w51: 150, w50: 160, mtd: 624, nov: 590, oct: 560, date: new Date(2025, 11, 12) },
+  { sno: "", department: "MAMMOGRAPHY", w52: 116, w51: 104, w50: 110, mtd: 440, nov: 416, oct: 390, date: new Date(2025, 11, 11) },
+  { sno: "", department: "XRAY", w52: 830, w51: 787, w50: 813, mtd: 3167, nov: 3000, oct: 2880, date: new Date(2025, 11, 10) },
   { sno: 2, category: "DENTAL", isHeader: true },
-  { sno: "", department: "CBCT", w52: 124, w51: 116, w50: 120, mtd: 470, nov: 444, oct: 420 },
-  { sno: "", department: "OPG", w52: 225, w51: 210, w50: 215, mtd: 850, nov: 810, oct: 775 },
+  { sno: "", department: "CBCT", w52: 124, w51: 116, w50: 120, mtd: 470, nov: 444, oct: 420, date: new Date(2025, 11, 9) },
+  { sno: "", department: "OPG", w52: 225, w51: 210, w50: 215, mtd: 850, nov: 810, oct: 775, date: new Date(2025, 11, 8) },
   { sno: 3, category: "ORTHO", isHeader: true },
-  { sno: "", department: "DEXA", w52: 95, w51: 88, w50: 90, mtd: 355, nov: 338, oct: 320 },
+  { sno: "", department: "DEXA", w52: 95, w51: 88, w50: 90, mtd: 355, nov: 338, oct: 320, date: new Date(2025, 11, 7) },
   { sno: 4, category: "LAB", isHeader: true },
-  { sno: "", department: "BIOCHEMISTRY", w52: 3520, w51: 3350, w50: 3480, mtd: 13500, nov: 12850, oct: 12200 },
+  { sno: "", department: "BIOCHEMISTRY", w52: 3520, w51: 3350, w50: 3480, mtd: 13500, nov: 12850, oct: 12200, date: new Date(2025, 11, 6) },
   { sno: 5, category: "CARDIOLOGY", isHeader: true },
-  { sno: "", department: "ECG", w52: 425, w51: 400, w50: 410, mtd: 1625, nov: 1540, oct: 1460 },
-  { sno: "", department: "2D Echo", w52: 256, w51: 240, w50: 250, mtd: 976, nov: 924, oct: 880 },
-  { sno: "", department: "TMT", w52: 104, w51: 96, w50: 100, mtd: 396, nov: 376, oct: 356 },
+  { sno: "", department: "ECG", w52: 425, w51: 400, w50: 410, mtd: 1625, nov: 1540, oct: 1460, date: new Date(2025, 11, 5) },
+  { sno: "", department: "2D Echo", w52: 256, w51: 240, w50: 250, mtd: 976, nov: 924, oct: 880, date: new Date(2025, 11, 4) },
+  { sno: "", department: "TMT", w52: 104, w51: 96, w50: 100, mtd: 396, nov: 376, oct: 356, date: new Date(2025, 11, 3) },
   { sno: 6, category: "NEURO", isHeader: true },
-  { sno: "", department: "EEG", w52: 84, w51: 78, w50: 80, mtd: 320, nov: 304, oct: 290 },
-  { sno: "", department: "ENMG", w52: 56, w51: 50, w50: 52, mtd: 210, nov: 200, oct: 190 },
-  { sno: "", department: "NCS", w52: 50, w51: 46, w50: 48, mtd: 190, nov: 180, oct: 170 },
+  { sno: "", department: "EEG", w52: 84, w51: 78, w50: 80, mtd: 320, nov: 304, oct: 290, date: new Date(2025, 11, 2) },
+  { sno: "", department: "ENMG", w52: 56, w51: 50, w50: 52, mtd: 210, nov: 200, oct: 190, date: new Date(2025, 11, 1) },
+  { sno: "", department: "NCS", w52: 50, w51: 46, w50: 48, mtd: 190, nov: 180, oct: 170, date: new Date(2025, 10, 30) },
 ];
 
 const chartData = [
@@ -73,6 +73,8 @@ const DeptVolume = () => {
       if (filters.department && filters.department !== "all" && !item.isHeader) {
         return item.department.toLowerCase().includes(filters.department);
       }
+      if (!item.isHeader && filters.dateFrom && item.date < new Date(filters.dateFrom)) return false;
+      if (!item.isHeader && filters.dateTo && item.date > new Date(filters.dateTo)) return false;
       return true;
     });
   }, [filters]);

@@ -11,15 +11,15 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 const salespersonData = [
   { sno: "", location: "KOMPALLY", isHeader: true },
-  { sno: 1, name: "Ganesh", location: "Kompally", mtd: 4.82, projection: 5.5, growth: 12.5, nov: 4.28, oct: 3.95 },
-  { sno: 2, name: "Rakesh", location: "Kompally", mtd: 3.42, projection: 4.0, growth: 15.2, nov: 2.97, oct: 2.69 },
-  { sno: 3, name: "Devender", location: "Kompally", mtd: 2.85, projection: 3.3, growth: 8.5, nov: 2.63, oct: 2.48 },
-  { sno: 4, name: "Goutham", location: "Kompally", mtd: 2.15, projection: 2.5, growth: 5.8, nov: 2.03, oct: 1.95 },
+  { sno: 1, name: "Ganesh", location: "Kompally", mtd: 4.82, projection: 5.5, growth: 12.5, nov: 4.28, oct: 3.95, date: new Date(2025, 11, 15) },
+  { sno: 2, name: "Rakesh", location: "Kompally", mtd: 3.42, projection: 4.0, growth: 15.2, nov: 2.97, oct: 2.69, date: new Date(2025, 11, 14) },
+  { sno: 3, name: "Devender", location: "Kompally", mtd: 2.85, projection: 3.3, growth: 8.5, nov: 2.63, oct: 2.48, date: new Date(2025, 11, 13) },
+  { sno: 4, name: "Goutham", location: "Kompally", mtd: 2.15, projection: 2.5, growth: 5.8, nov: 2.03, oct: 1.95, date: new Date(2025, 11, 12) },
   { sno: "", location: "KPHB", isHeader: true },
-  { sno: 5, name: "Prasanth", location: "KPHB", mtd: 3.95, projection: 4.5, growth: 8.0, nov: 3.66, oct: 3.44 },
-  { sno: 6, name: "Madhav", location: "KPHB", mtd: 2.56, projection: 3.0, growth: 3.2, nov: 2.48, oct: 2.41 },
-  { sno: 7, name: "Ramaswamy", location: "KPHB", mtd: 2.12, projection: 2.4, growth: 6.5, nov: 1.99, oct: 1.89 },
-  { sno: 8, name: "Veeresh", location: "KPHB", mtd: 1.85, projection: 2.1, growth: 4.2, nov: 1.78, oct: 1.72 },
+  { sno: 5, name: "Prasanth", location: "KPHB", mtd: 3.95, projection: 4.5, growth: 8.0, nov: 3.66, oct: 3.44, date: new Date(2025, 11, 11) },
+  { sno: 6, name: "Madhav", location: "KPHB", mtd: 2.56, projection: 3.0, growth: 3.2, nov: 2.48, oct: 2.41, date: new Date(2025, 11, 10) },
+  { sno: 7, name: "Ramaswamy", location: "KPHB", mtd: 2.12, projection: 2.4, growth: 6.5, nov: 1.99, oct: 1.89, date: new Date(2025, 11, 9) },
+  { sno: 8, name: "Veeresh", location: "KPHB", mtd: 1.85, projection: 2.1, growth: 4.2, nov: 1.78, oct: 1.72, date: new Date(2025, 11, 8) },
 ];
 
 const columns = [
@@ -64,6 +64,8 @@ const Salesperson = () => {
       if (filters.salesperson && filters.salesperson !== "all" && !item.isHeader) {
         return item.name.toLowerCase() === filters.salesperson;
       }
+      if (!item.isHeader && filters.dateFrom && item.date < new Date(filters.dateFrom)) return false;
+      if (!item.isHeader && filters.dateTo && item.date > new Date(filters.dateTo)) return false;
       return true;
     });
   }, [filters]);

@@ -10,18 +10,18 @@ import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const branchData = [
-  { sno: 1, state: "TS", branch: "Punjagutta", w52: 12.5, w51: 11.8, w50: 13.2, mtdPlan: 50.0, mtdAch: 42.5, achPct: 85.0, gap: -7.5, bdHead: "Nagesh", drilldownUrl: "/lab-rad?branch=punjagutta" },
-  { sno: 2, state: "TS", branch: "Kompally", w52: 9.8, w51: 8.5, w50: 10.2, mtdPlan: 40.0, mtdAch: 35.2, achPct: 88.0, gap: -4.8, bdHead: "Ganesh/Rakesh", drilldownUrl: "/lab-rad?branch=kompally" },
-  { sno: 3, state: "TS", branch: "KPHB", w52: 11.2, w51: 10.5, w50: 11.8, mtdPlan: 45.0, mtdAch: 38.5, achPct: 85.6, gap: -6.5, bdHead: "Prasanth", drilldownUrl: "/lab-rad?branch=kphb" },
-  { sno: 4, state: "TS", branch: "MBNR", w52: 5.4, w51: 4.8, w50: 5.2, mtdPlan: 22.0, mtdAch: 18.5, achPct: 84.1, gap: -3.5, bdHead: "Ramakrishna", drilldownUrl: "/lab-rad?branch=mbnr" },
-  { sno: 5, state: "TS", branch: "Nalgonda", w52: 4.2, w51: 3.9, w50: 4.5, mtdPlan: 18.0, mtdAch: 15.2, achPct: 84.4, gap: -2.8, bdHead: "Mallikarjun", drilldownUrl: "/lab-rad?branch=nalgonda" },
-  { sno: 6, state: "TS", branch: "Nizamabad", w52: 6.1, w51: 5.5, w50: 6.3, mtdPlan: 25.0, mtdAch: 21.8, achPct: 87.2, gap: -3.2, bdHead: "Uma", drilldownUrl: "/lab-rad?branch=nizamabad" },
-  { sno: 7, state: "TS", branch: "Medak", w52: 4.8, w51: 4.2, w50: 5.0, mtdPlan: 20.0, mtdAch: 16.5, achPct: 82.5, gap: -3.5, bdHead: "Srinivas E", drilldownUrl: "/lab-rad?branch=medak" },
-  { sno: 8, state: "TS", branch: "Sangareddy", w52: 5.2, w51: 4.8, w50: 5.5, mtdPlan: 22.0, mtdAch: 18.2, achPct: 82.7, gap: -3.8, bdHead: "Murali", drilldownUrl: "/lab-rad?branch=sangareddy" },
-  { sno: 9, state: "TS", branch: "Santhanu", w52: 3.8, w51: 3.5, w50: 4.0, mtdPlan: 16.0, mtdAch: 13.5, achPct: 84.4, gap: -2.5, bdHead: "Sujeeth", drilldownUrl: "/lab-rad?branch=santhanu" },
-  { sno: 10, state: "TS", branch: "Jagtial", w52: 4.5, w51: 4.0, w50: 4.8, mtdPlan: 18.0, mtdAch: 15.8, achPct: 87.8, gap: -2.2, bdHead: "Dr. Sujith", drilldownUrl: "/lab-rad?branch=jagtial" },
-  { sno: 11, state: "AP", branch: "Rajahmundry", w52: 7.2, w51: 6.5, w50: 7.5, mtdPlan: 30.0, mtdAch: 25.5, achPct: 85.0, gap: -4.5, bdHead: "Satish", drilldownUrl: "/lab-rad?branch=rajahmundry" },
-  { sno: 12, state: "KA", branch: "Bangalore", w52: 15.5, w51: 14.2, w50: 16.0, mtdPlan: 65.0, mtdAch: 55.8, achPct: 85.8, gap: -9.2, bdHead: "Dr. Sreenath", drilldownUrl: "/lab-rad?branch=bangalore" },
+  { sno: 1, state: "TS", branch: "Punjagutta", w52: 12.5, w51: 11.8, w50: 13.2, mtdPlan: 50.0, mtdAch: 42.5, achPct: 85.0, gap: -7.5, bdHead: "Nagesh", drilldownUrl: "/lab-rad?branch=punjagutta", date: new Date(2025, 11, 15) },
+  { sno: 2, state: "TS", branch: "Kompally", w52: 9.8, w51: 8.5, w50: 10.2, mtdPlan: 40.0, mtdAch: 35.2, achPct: 88.0, gap: -4.8, bdHead: "Ganesh/Rakesh", drilldownUrl: "/lab-rad?branch=kompally", date: new Date(2025, 11, 14) },
+  { sno: 3, state: "TS", branch: "KPHB", w52: 11.2, w51: 10.5, w50: 11.8, mtdPlan: 45.0, mtdAch: 38.5, achPct: 85.6, gap: -6.5, bdHead: "Prasanth", drilldownUrl: "/lab-rad?branch=kphb", date: new Date(2025, 11, 13) },
+  { sno: 4, state: "TS", branch: "MBNR", w52: 5.4, w51: 4.8, w50: 5.2, mtdPlan: 22.0, mtdAch: 18.5, achPct: 84.1, gap: -3.5, bdHead: "Ramakrishna", drilldownUrl: "/lab-rad?branch=mbnr", date: new Date(2025, 11, 12) },
+  { sno: 5, state: "TS", branch: "Nalgonda", w52: 4.2, w51: 3.9, w50: 4.5, mtdPlan: 18.0, mtdAch: 15.2, achPct: 84.4, gap: -2.8, bdHead: "Mallikarjun", drilldownUrl: "/lab-rad?branch=nalgonda", date: new Date(2025, 11, 11) },
+  { sno: 6, state: "TS", branch: "Nizamabad", w52: 6.1, w51: 5.5, w50: 6.3, mtdPlan: 25.0, mtdAch: 21.8, achPct: 87.2, gap: -3.2, bdHead: "Uma", drilldownUrl: "/lab-rad?branch=nizamabad", date: new Date(2025, 11, 10) },
+  { sno: 7, state: "TS", branch: "Medak", w52: 4.8, w51: 4.2, w50: 5.0, mtdPlan: 20.0, mtdAch: 16.5, achPct: 82.5, gap: -3.5, bdHead: "Srinivas E", drilldownUrl: "/lab-rad?branch=medak", date: new Date(2025, 11, 9) },
+  { sno: 8, state: "TS", branch: "Sangareddy", w52: 5.2, w51: 4.8, w50: 5.5, mtdPlan: 22.0, mtdAch: 18.2, achPct: 82.7, gap: -3.8, bdHead: "Murali", drilldownUrl: "/lab-rad?branch=sangareddy", date: new Date(2025, 11, 8) },
+  { sno: 9, state: "TS", branch: "Santhanu", w52: 3.8, w51: 3.5, w50: 4.0, mtdPlan: 16.0, mtdAch: 13.5, achPct: 84.4, gap: -2.5, bdHead: "Sujeeth", drilldownUrl: "/lab-rad?branch=santhanu", date: new Date(2025, 11, 7) },
+  { sno: 10, state: "TS", branch: "Jagtial", w52: 4.5, w51: 4.0, w50: 4.8, mtdPlan: 18.0, mtdAch: 15.8, achPct: 87.8, gap: -2.2, bdHead: "Dr. Sujith", drilldownUrl: "/lab-rad?branch=jagtial", date: new Date(2025, 11, 6) },
+  { sno: 11, state: "AP", branch: "Rajahmundry", w52: 7.2, w51: 6.5, w50: 7.5, mtdPlan: 30.0, mtdAch: 25.5, achPct: 85.0, gap: -4.5, bdHead: "Satish", drilldownUrl: "/lab-rad?branch=rajahmundry", date: new Date(2025, 11, 5) },
+  { sno: 12, state: "KA", branch: "Bangalore", w52: 15.5, w51: 14.2, w50: 16.0, mtdPlan: 65.0, mtdAch: 55.8, achPct: 85.8, gap: -9.2, bdHead: "Dr. Sreenath", drilldownUrl: "/lab-rad?branch=bangalore", date: new Date(2025, 11, 4) },
 ];
 
 const columns = [
@@ -66,6 +66,8 @@ const DailyRevenue = () => {
     return branchData.filter(item => {
       if (filters.state && filters.state !== "all" && item.state !== filters.state) return false;
       if (filters.branch && filters.branch !== "all" && item.branch.toLowerCase() !== filters.branch) return false;
+      if (filters.dateFrom && item.date < new Date(filters.dateFrom)) return false;
+      if (filters.dateTo && item.date > new Date(filters.dateTo)) return false;
       return true;
     });
   }, [filters]);
