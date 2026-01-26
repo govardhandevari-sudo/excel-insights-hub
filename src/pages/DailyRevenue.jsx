@@ -34,56 +34,45 @@ const branchData = [
   { sno: 12, state: "KA", branch: "BANGALORE", d28: 3.0, d29: 3.8, d30: 3.5, d31: 4.2, w52: 15.5, w51: 14.2, w50: 16.0, w49: 14.8, mtdPlan: 65.0, mtdAch: 55.8, achPct: 85.8, perDayPlan: 2.10, decTarget: 65.0, mtdProjection: 60.5, gap: -9.2, nov: 58.2, oct: 55.0, bdHead: "DR.SREENATH", isHeader: false, date: new Date(2025, 11, 31) },
 ];
 
+// Simplified columns for better fit
 const columns = [
-  { key: "sno", label: "S.No", align: "center", render: (v, row) => row.isHeader ? "" : v },
-  { key: "state", label: "State", align: "center", render: (v, row) => row.isHeader ? "" : v },
+  { key: "sno", label: "#", align: "center", render: (v, row) => row.isHeader ? "" : v },
+  { key: "state", label: "St", align: "center", render: (v, row) => row.isHeader ? "" : v },
   { 
     key: "branch", 
-    label: "Branch Name", 
+    label: "Branch", 
     align: "left",
     render: (v, row) => row.isHeader ? (
       <span className={`font-bold ${row.isTotalRow ? "text-primary" : "text-muted-foreground"}`}>{v}</span>
     ) : v
   },
-  { key: "d28", label: "28-Dec", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
-  { key: "d29", label: "29-Dec", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
-  { key: "d30", label: "30-Dec", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
-  { key: "d31", label: "31-Dec", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
-  { key: "w52", label: "W52", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
-  { key: "w51", label: "W51", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
-  { key: "w50", label: "W50", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
-  { key: "w49", label: "W49", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
-  { key: "mtdPlan", label: "MTD Plan", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
-  { key: "mtdAch", label: "MTD Ach.", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
+  { key: "mtdPlan", label: "Plan", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `${v.toFixed(0)}L` : "-") },
+  { key: "mtdAch", label: "Ach.", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `${v.toFixed(0)}L` : "-") },
   { 
     key: "achPct", 
-    label: "Ach %", 
+    label: "Ach%", 
     align: "center", 
     render: (v, row) => row.isHeader ? "-" : (v ? (
       <Badge 
         variant="secondary" 
-        className={v >= 85 ? "bg-success/10 text-success" : v >= 75 ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive"}
+        className={v >= 85 ? "bg-success/10 text-success text-[10px] px-1" : v >= 75 ? "bg-warning/10 text-warning text-[10px] px-1" : "bg-destructive/10 text-destructive text-[10px] px-1"}
       >
-        {v.toFixed(1)}%
+        {v.toFixed(0)}%
       </Badge>
     ) : "-")
   },
-  { key: "perDayPlan", label: "Per Day Plan", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(2)}L` : "-") },
-  { key: "decTarget", label: "Dec'25 Target", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
-  { key: "mtdProjection", label: "MTD Projection", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
+  { key: "decTarget", label: "Target", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `${v.toFixed(0)}L` : "-") },
   { 
     key: "gap", 
     label: "GAP", 
     align: "right", 
     render: (v, row) => row.isHeader ? "-" : (v !== undefined ? (
-      <span className={v >= 0 ? "text-success" : "text-destructive"}>
-        {v >= 0 ? "+" : ""}₹{v.toFixed(1)}L
+      <span className={`text-xs ${v >= 0 ? "text-success" : "text-destructive"}`}>
+        {v >= 0 ? "+" : ""}{v.toFixed(1)}L
       </span>
     ) : "-")
   },
-  { key: "nov", label: "Nov-25", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
-  { key: "oct", label: "Oct-25", align: "right", render: (v, row) => row.isHeader ? "-" : (v ? `₹${v.toFixed(1)}L` : "-") },
-  { key: "bdHead", label: "BD HEAD", align: "left", render: (v, row) => row.isHeader ? "" : v },
+  { key: "bdHead", label: "BD Head", align: "left", render: (v, row) => row.isHeader ? "" : (v ? v.split('/')[0].substring(0, 8) : "") },
 ];
 
 const DailyRevenue = () => {

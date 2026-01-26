@@ -145,15 +145,15 @@ export function DataTable({
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px]">
+        <div className="overflow-x-auto max-w-full">
+          <table className="w-full table-auto">
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {columns.map((col) => (
                   <th
                     key={col.key}
                     className={cn(
-                      "px-3 md:px-4 py-2 md:py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap",
+                      "px-2 py-2 text-[10px] md:text-xs font-semibold text-muted-foreground uppercase tracking-tight",
                       col.align === "center" && "text-center",
                       col.align === "right" && "text-right",
                       !col.align && "text-left",
@@ -195,7 +195,7 @@ export function DataTable({
                       <td
                         key={col.key}
                         className={cn(
-                          "px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm whitespace-nowrap",
+                          "px-2 py-2 text-[11px] md:text-xs",
                           col.align === "center" && "text-center",
                           col.align === "right" && "text-right",
                           !col.align && "text-left"
