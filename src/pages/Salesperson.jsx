@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/reports/PageHeader";
 import { ReportFilters } from "@/components/reports/ReportFilters";
@@ -11,15 +12,19 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 const salespersonData = [
   { sno: "", location: "KOMPALLY", isHeader: true },
-  { sno: 1, name: "Ganesh", location: "Kompally", mtd: 4.82, projection: 5.5, growth: 12.5, nov: 4.28, oct: 3.95, date: new Date(2025, 11, 15) },
-  { sno: 2, name: "Rakesh", location: "Kompally", mtd: 3.42, projection: 4.0, growth: 15.2, nov: 2.97, oct: 2.69, date: new Date(2025, 11, 14) },
-  { sno: 3, name: "Devender", location: "Kompally", mtd: 2.85, projection: 3.3, growth: 8.5, nov: 2.63, oct: 2.48, date: new Date(2025, 11, 13) },
-  { sno: 4, name: "Goutham", location: "Kompally", mtd: 2.15, projection: 2.5, growth: 5.8, nov: 2.03, oct: 1.95, date: new Date(2025, 11, 12) },
+  { sno: 1, name: "Ganesh", location: "Kompally", mtd: 4.82, projection: 5.5, growth: 12.5, nov: 4.28, oct: 3.95, date: new Date(2025, 11, 15), id: "ganesh" },
+  { sno: 2, name: "Rakesh", location: "Kompally", mtd: 3.42, projection: 4.0, growth: 15.2, nov: 2.97, oct: 2.69, date: new Date(2025, 11, 14), id: "rakesh" },
+  { sno: 3, name: "Devender", location: "Kompally", mtd: 2.85, projection: 3.3, growth: 8.5, nov: 2.63, oct: 2.48, date: new Date(2025, 11, 13), id: "devender" },
+  { sno: 4, name: "Goutham", location: "Kompally", mtd: 2.15, projection: 2.5, growth: 5.8, nov: 2.03, oct: 1.95, date: new Date(2025, 11, 12), id: "goutham" },
   { sno: "", location: "KPHB", isHeader: true },
-  { sno: 5, name: "Prasanth", location: "KPHB", mtd: 3.95, projection: 4.5, growth: 8.0, nov: 3.66, oct: 3.44, date: new Date(2025, 11, 11) },
-  { sno: 6, name: "Madhav", location: "KPHB", mtd: 2.56, projection: 3.0, growth: 3.2, nov: 2.48, oct: 2.41, date: new Date(2025, 11, 10) },
-  { sno: 7, name: "Ramaswamy", location: "KPHB", mtd: 2.12, projection: 2.4, growth: 6.5, nov: 1.99, oct: 1.89, date: new Date(2025, 11, 9) },
-  { sno: 8, name: "Veeresh", location: "KPHB", mtd: 1.85, projection: 2.1, growth: 4.2, nov: 1.78, oct: 1.72, date: new Date(2025, 11, 8) },
+  { sno: 5, name: "Prasanth", location: "KPHB", mtd: 3.95, projection: 4.5, growth: 8.0, nov: 3.66, oct: 3.44, date: new Date(2025, 11, 11), id: "prasanth" },
+  { sno: 6, name: "Madhav", location: "KPHB", mtd: 2.56, projection: 3.0, growth: 3.2, nov: 2.48, oct: 2.41, date: new Date(2025, 11, 10), id: "madhav" },
+  { sno: 7, name: "Ramaswamy", location: "KPHB", mtd: 2.12, projection: 2.4, growth: 6.5, nov: 1.99, oct: 1.89, date: new Date(2025, 11, 9), id: "ramaswamy" },
+  { sno: 8, name: "Veeresh", location: "KPHB", mtd: 1.85, projection: 2.1, growth: 4.2, nov: 1.78, oct: 1.72, date: new Date(2025, 11, 8), id: "veeresh" },
+  { sno: "", location: "PUNJAGUTTA", isHeader: true },
+  { sno: 9, name: "Nagesh", location: "Punjagutta", mtd: 3.53, projection: 4.0, growth: 10.2, nov: 3.20, oct: 3.05, date: new Date(2025, 11, 7), id: "nagesh" },
+  { sno: "", location: "MBNR", isHeader: true },
+  { sno: 10, name: "Ramakrishna", location: "MBNR", mtd: 1.66, projection: 1.9, growth: 7.5, nov: 1.54, oct: 1.42, date: new Date(2025, 11, 6), id: "ramakrishna" },
 ];
 
 const columns = [
@@ -51,6 +56,7 @@ const columns = [
 ];
 
 const Salesperson = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({});
 
   const filteredData = useMemo(() => {
@@ -248,9 +254,15 @@ const Salesperson = () => {
 
         <DataTable
           title="Detailed Salesperson Performance"
-          subtitle="Month-to-date performance with growth comparison"
+          subtitle="Month-to-date performance with growth comparison - Click on a salesperson to view details"
           columns={columns}
           data={filteredData}
+          rowClickable
+          onRowClick={(row) => {
+            if (!row.isHeader && row.id) {
+              navigate(`/salesperson-detail?id=${row.id}`);
+            }
+          }}
         />
       </div>
     </DashboardLayout>

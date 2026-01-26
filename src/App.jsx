@@ -10,6 +10,7 @@ import PaymentMode from "./pages/PaymentMode";
 import AvgRealisation from "./pages/AvgRealisation";
 import DeptRevenue from "./pages/DeptRevenue";
 import Salesperson from "./pages/Salesperson";
+import SalespersonDetail from "./pages/SalespersonDetail";
 import RefNonRef from "./pages/RefNonRef";
 import DeptVolume from "./pages/DeptVolume";
 import NotFound from "./pages/NotFound";
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/avg-realisation" element={<AvgRealisation />} />
           <Route path="/dept-revenue" element={<DeptRevenue />} />
           <Route path="/salesperson" element={<Salesperson />} />
+          <Route path="/salesperson-detail" element={<SalespersonDetail />} />
           <Route path="/ref-nonref" element={<RefNonRef />} />
           <Route path="/dept-volume" element={<DeptVolume />} />
           <Route path="*" element={<NotFound />} />
