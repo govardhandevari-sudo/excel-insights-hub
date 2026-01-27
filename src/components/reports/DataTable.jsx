@@ -145,8 +145,8 @@ export function DataTable({
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="overflow-x-auto max-w-full">
-          <table className="w-full table-auto">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max">
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {columns.map((col) => (
