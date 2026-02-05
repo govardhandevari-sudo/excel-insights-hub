@@ -7,7 +7,8 @@ import {
   Building2, 
   UserCheck, 
   GitBranch,
-  BarChart3
+   BarChart3,
+   Target
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import logo from "@/assets/focus-diagnostics-logo.png";
@@ -34,6 +35,7 @@ const menuItems = [
   { title: "Salesperson", url: "/salesperson", icon: UserCheck },
   { title: "Ref & Non-Ref", url: "/ref-nonref", icon: GitBranch },
   { title: "Dept Volume", url: "/dept-volume", icon: BarChart3 },
+   { title: "Set Targets", url: "/salesperson-targets", icon: Target },
 ];
 
 export function AppSidebar() {
