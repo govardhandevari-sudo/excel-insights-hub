@@ -13,6 +13,7 @@ import Salesperson from "./pages/Salesperson";
 import SalespersonDetail from "./pages/SalespersonDetail";
 import RefNonRef from "./pages/RefNonRef";
 import DeptVolume from "./pages/DeptVolume";
+ import SalespersonTargets from "./pages/SalespersonTargets";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/salesperson-detail" element={<SalespersonDetail />} />
           <Route path="/ref-nonref" element={<RefNonRef />} />
           <Route path="/dept-volume" element={<DeptVolume />} />
+           <Route path="/salesperson-targets" element={<SalespersonTargets />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
