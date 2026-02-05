@@ -1,4 +1,4 @@
- import { useState } from "react";
+ import { useState, useMemo } from "react";
  import { DashboardLayout } from "@/components/layout/DashboardLayout";
  import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
  import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@
    SelectValue,
  } from "@/components/ui/select";
  import { useToast } from "@/hooks/use-toast";
- import { Save, Users } from "lucide-react";
+ import { Save, Users, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
  
  // Mock salesperson data
  const initialSalespersons = [
@@ -34,6 +34,10 @@
  export default function SalespersonTargets() {
    const { toast } = useToast();
    const [duration, setDuration] = useState("monthly");
+   const [stateFilter, setStateFilter] = useState("all");
+   const [branchFilter, setBranchFilter] = useState("all");
+   const [currentPage, setCurrentPage] = useState(1);
+   const rowsPerPage = 10;
    const [selectedIds, setSelectedIds] = useState([]);
    const [targets, setTargets] = useState(
      initialSalespersons.reduce((acc, sp) => {
@@ -43,15 +47,65 @@
    );
    const [bulkTarget, setBulkTarget] = useState("");
  
-   const allSelected = selectedIds.length === initialSalespersons.length;
+   // Get unique states and branches for filters
+   const states = useMemo(() => {
+     const unique = [...new Set(initialSalespersons.map((sp) => sp.region))];
+     return unique.sort();
+   }, []);
+ 
+   const branches = useMemo(() => {
+     let filtered = initialSalespersons;
+     if (stateFilter !== "all") {
+       filtered = filtered.filter((sp) => sp.region === stateFilter);
+     }
+     const unique = [...new Set(filtered.map((sp) => sp.branch))];
+     return unique.sort();
+   }, [stateFilter]);
+ 
+   // Filter salespersons based on state and branch
+   const filteredSalespersons = useMemo(() => {
+     let result = initialSalespersons;
+     if (stateFilter !== "all") {
+       result = result.filter((sp) => sp.region === stateFilter);
+     }
+     if (branchFilter !== "all") {
+       result = result.filter((sp) => sp.branch === branchFilter);
+     }
+     return result;
+   }, [stateFilter, branchFilter]);
+ 
+   // Pagination
+   const totalPages = Math.ceil(filteredSalespersons.length / rowsPerPage);
+   const startIndex = (currentPage - 1) * rowsPerPage;
+   const endIndex = Math.min(startIndex + rowsPerPage, filteredSalespersons.length);
+   const paginatedSalespersons = filteredSalespersons.slice(startIndex, endIndex);
+ 
+   const allSelected = selectedIds.length === filteredSalespersons.length && filteredSalespersons.length > 0;
    const someSelected = selectedIds.length > 0 && !allSelected;
  
    const handleSelectAll = (checked) => {
      if (checked) {
-       setSelectedIds(initialSalespersons.map((sp) => sp.id));
+       setSelectedIds(filteredSalespersons.map((sp) => sp.id));
      } else {
        setSelectedIds([]);
      }
+   };
+ 
+   const handleStateChange = (value) => {
+     setStateFilter(value);
+     setBranchFilter("all");
+     setCurrentPage(1);
+     setSelectedIds([]);
+   };
+ 
+   const handleBranchChange = (value) => {
+     setBranchFilter(value);
+     setCurrentPage(1);
+     setSelectedIds([]);
+   };
+ 
+   const goToPage = (page) => {
+     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
    };
  
    const handleSelectOne = (id, checked) => {
@@ -143,6 +197,49 @@
            </div>
          </div>
  
+         {/* Filters */}
+         <Card>
+           <CardContent className="py-3 px-4">
+             <div className="flex flex-wrap items-center gap-4">
+               <div className="flex items-center gap-2">
+                 <Label className="text-sm font-medium whitespace-nowrap">State:</Label>
+                 <Select value={stateFilter} onValueChange={handleStateChange}>
+                   <SelectTrigger className="w-[150px]">
+                     <SelectValue placeholder="All States" />
+                   </SelectTrigger>
+                   <SelectContent className="bg-popover z-50">
+                     <SelectItem value="all">All States</SelectItem>
+                     {states.map((state) => (
+                       <SelectItem key={state} value={state}>
+                         {state}
+                       </SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+               </div>
+               <div className="flex items-center gap-2">
+                 <Label className="text-sm font-medium whitespace-nowrap">Branch:</Label>
+                 <Select value={branchFilter} onValueChange={handleBranchChange}>
+                   <SelectTrigger className="w-[150px]">
+                     <SelectValue placeholder="All Branches" />
+                   </SelectTrigger>
+                   <SelectContent className="bg-popover z-50">
+                     <SelectItem value="all">All Branches</SelectItem>
+                     {branches.map((branch) => (
+                       <SelectItem key={branch} value={branch}>
+                         {branch}
+                       </SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+               </div>
+               <span className="text-sm text-muted-foreground ml-auto">
+                 {filteredSalespersons.length} salesperson(s)
+               </span>
+             </div>
+           </CardContent>
+         </Card>
+ 
          {/* Bulk Action Bar */}
          {selectedIds.length > 0 && (
            <Card className="bg-primary/5 border-primary/20">
@@ -172,7 +269,7 @@
            <CardHeader className="pb-3">
              <CardTitle className="flex items-center gap-2 text-base">
                <Users className="h-5 w-5" />
-               Sales Team ({initialSalespersons.length})
+               Sales Team
              </CardTitle>
            </CardHeader>
            <CardContent className="p-0">
@@ -206,7 +303,14 @@
                    </tr>
                  </thead>
                  <tbody>
-                   {initialSalespersons.map((sp, idx) => (
+                   {paginatedSalespersons.length === 0 ? (
+                     <tr>
+                       <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                         No salespersons found
+                       </td>
+                     </tr>
+                   ) : (
+                     paginatedSalespersons.map((sp, idx) => (
                      <tr
                        key={sp.id}
                        className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
@@ -218,7 +322,7 @@
                            aria-label={`Select ${sp.name}`}
                          />
                        </td>
-                       <td className="px-4 py-3 text-sm">{idx + 1}</td>
+                       <td className="px-4 py-3 text-sm">{startIndex + idx + 1}</td>
                        <td className="px-4 py-3 text-sm font-medium">{sp.name}</td>
                        <td className="px-4 py-3 text-sm">{sp.branch}</td>
                        <td className="px-4 py-3 text-sm">{sp.region}</td>
@@ -232,10 +336,70 @@
                          />
                        </td>
                      </tr>
-                   ))}
+                     ))
+                   )}
                  </tbody>
                </table>
              </div>
+             
+             {/* Pagination */}
+             {filteredSalespersons.length > rowsPerPage && (
+               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-border bg-muted/20">
+                 <span className="text-xs md:text-sm text-muted-foreground">
+                   Showing {startIndex + 1}-{endIndex} of {filteredSalespersons.length}
+                 </span>
+                 <div className="flex items-center gap-1">
+                   <Button
+                     variant="outline"
+                     size="icon"
+                     className="h-8 w-8"
+                     onClick={() => goToPage(1)}
+                     disabled={currentPage === 1}
+                   >
+                     <ChevronsLeft className="h-4 w-4" />
+                   </Button>
+                   <Button
+                     variant="outline"
+                     size="icon"
+                     className="h-8 w-8"
+                     onClick={() => goToPage(currentPage - 1)}
+                     disabled={currentPage === 1}
+                   >
+                     <ChevronLeft className="h-4 w-4" />
+                   </Button>
+                   <div className="flex items-center gap-1 mx-2">
+                     <span className="text-xs md:text-sm text-muted-foreground">Page</span>
+                     <Input
+                       type="number"
+                       min={1}
+                       max={totalPages}
+                       value={currentPage}
+                       onChange={(e) => goToPage(Number(e.target.value))}
+                       className="w-12 h-8 text-xs md:text-sm text-center"
+                     />
+                     <span className="text-xs md:text-sm text-muted-foreground">of {totalPages}</span>
+                   </div>
+                   <Button
+                     variant="outline"
+                     size="icon"
+                     className="h-8 w-8"
+                     onClick={() => goToPage(currentPage + 1)}
+                     disabled={currentPage === totalPages}
+                   >
+                     <ChevronRight className="h-4 w-4" />
+                   </Button>
+                   <Button
+                     variant="outline"
+                     size="icon"
+                     className="h-8 w-8"
+                     onClick={() => goToPage(totalPages)}
+                     disabled={currentPage === totalPages}
+                   >
+                     <ChevronsRight className="h-4 w-4" />
+                   </Button>
+                 </div>
+               </div>
+             )}
            </CardContent>
          </Card>
  
