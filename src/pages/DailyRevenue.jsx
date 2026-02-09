@@ -217,6 +217,7 @@ const DailyRevenue = () => {
           columns={columns}
           data={filteredData}
           rowClickable
+          exportFilename="daily-revenue-report"
         />
       </div>
     </DashboardLayout>

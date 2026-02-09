@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ExcelDownloadButton } from "./ExcelDownloadButton";
 
 export function DataTable({ 
   title, 
@@ -22,7 +23,8 @@ export function DataTable({
   onRowClick, 
   rowClickable,
   showPagination = true,
-  defaultRowsPerPage = 10
+  defaultRowsPerPage = 10,
+  exportFilename = "report"
 }) {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
@@ -130,6 +132,7 @@ export function DataTable({
               <CardTitle className="font-heading text-base md:text-lg">{title}</CardTitle>
               {subtitle && <p className="text-xs md:text-sm text-muted-foreground mt-1">{subtitle}</p>}
             </div>
+            <ExcelDownloadButton data={data} columns={columns} filename={exportFilename} />
           </div>
           
           {/* Global Search */}

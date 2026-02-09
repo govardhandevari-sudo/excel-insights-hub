@@ -5,49 +5,29 @@ import { ReportFilters } from "@/components/reports/ReportFilters";
 import { DataTable } from "@/components/reports/DataTable";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CreditCard, Wallet, Banknote, TrendingUp } from "lucide-react";
+import { CreditCard, Wallet, Banknote, TrendingUp, Smartphone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area } from "recharts";
 
 const branchData = [
-  { sno: 1, branch: "Punjagutta", credit: 35.2, creditPct: 34, upiCards: 48.5, upiCardsPct: 47, cash: 20.4, cashPct: 19, total: 104.1, date: new Date(2025, 11, 15) },
-  { sno: 2, branch: "Kompally", credit: 32.1, creditPct: 30, upiCards: 53.6, upiCardsPct: 50, cash: 21.4, cashPct: 20, total: 107.1, date: new Date(2025, 11, 14) },
-  { sno: 3, branch: "KPHB", credit: 27.1, creditPct: 30, upiCards: 45.2, upiCardsPct: 50, cash: 18.0, cashPct: 20, total: 90.3, date: new Date(2025, 11, 13) },
-  { sno: 4, branch: "MBNR", credit: 10.7, creditPct: 30, upiCards: 16.1, upiCardsPct: 45, cash: 8.9, cashPct: 25, total: 35.7, date: new Date(2025, 11, 12) },
-  { sno: 5, branch: "Sangareddy", credit: 8.2, creditPct: 28, upiCards: 13.1, upiCardsPct: 45, cash: 7.9, cashPct: 27, total: 29.2, date: new Date(2025, 11, 11) },
-  { sno: 6, branch: "Nalgonda", credit: 5.5, creditPct: 26, upiCards: 10.0, upiCardsPct: 47, cash: 5.8, cashPct: 27, total: 21.3, date: new Date(2025, 11, 10) },
-  { sno: 7, branch: "Nizamabad", credit: 9.5, creditPct: 30, upiCards: 14.2, upiCardsPct: 45, cash: 7.9, cashPct: 25, total: 31.6, date: new Date(2025, 11, 9) },
-  { sno: 8, branch: "Medak", credit: 5.6, creditPct: 28, upiCards: 9.0, upiCardsPct: 45, cash: 5.4, cashPct: 27, total: 20.0, date: new Date(2025, 11, 8) },
-  { sno: 9, branch: "Santhanu", credit: 3.7, creditPct: 26, upiCards: 6.5, upiCardsPct: 46, cash: 4.0, cashPct: 28, total: 14.2, date: new Date(2025, 11, 7) },
-  { sno: 10, branch: "Jagtial", credit: 5.9, creditPct: 28, upiCards: 9.6, upiCardsPct: 46, cash: 5.4, cashPct: 26, total: 20.9, date: new Date(2025, 11, 6) },
-  { sno: 11, branch: "Rajahmundry", credit: 12.0, creditPct: 30, upiCards: 18.0, upiCardsPct: 45, cash: 10.0, cashPct: 25, total: 40.0, date: new Date(2025, 11, 5) },
-  { sno: 12, branch: "Bangalore", credit: 36.8, creditPct: 35, upiCards: 47.4, upiCardsPct: 45, cash: 21.0, cashPct: 20, total: 105.2, date: new Date(2025, 11, 4) },
+  { sno: 1, branch: "Punjagutta", cash: 15.6, upi: 31.2, card: 22.1, credit: 35.2, total: 104.1, cashOct: 14.0, cashNov: 15.0, upiOct: 28.5, upiNov: 30.0, cardOct: 20.0, cardNov: 21.0, creditOct: 33.5, creditNov: 34.5 },
+  { sno: 2, branch: "Kompally", cash: 16.1, upi: 34.3, card: 24.6, credit: 32.1, total: 107.1, cashOct: 14.5, cashNov: 15.5, upiOct: 31.0, upiNov: 33.0, cardOct: 22.0, cardNov: 23.5, creditOct: 30.0, creditNov: 31.0 },
+  { sno: 3, branch: "KPHB", cash: 13.6, upi: 27.1, card: 22.5, credit: 27.1, total: 90.3, cashOct: 12.0, cashNov: 13.0, upiOct: 24.5, upiNov: 26.0, cardOct: 20.0, cardNov: 21.5, creditOct: 25.0, creditNov: 26.0 },
+  { sno: 4, branch: "MBNR", cash: 7.1, upi: 10.7, card: 7.2, credit: 10.7, total: 35.7, cashOct: 6.0, cashNov: 6.5, upiOct: 9.5, upiNov: 10.0, cardOct: 6.5, cardNov: 7.0, creditOct: 9.5, creditNov: 10.0 },
+  { sno: 5, branch: "Sangareddy", cash: 5.8, upi: 8.8, card: 6.4, credit: 8.2, total: 29.2, cashOct: 5.0, cashNov: 5.5, upiOct: 8.0, upiNov: 8.5, cardOct: 5.8, cardNov: 6.0, creditOct: 7.5, creditNov: 8.0 },
+  { sno: 6, branch: "Nalgonda", cash: 4.3, upi: 6.4, card: 5.1, credit: 5.5, total: 21.3, cashOct: 3.5, cashNov: 4.0, upiOct: 5.8, upiNov: 6.0, cardOct: 4.5, cardNov: 4.8, creditOct: 5.0, creditNov: 5.2 },
+  { sno: 7, branch: "Nizamabad", cash: 6.3, upi: 9.5, card: 6.3, credit: 9.5, total: 31.6, cashOct: 5.5, cashNov: 6.0, upiOct: 8.5, upiNov: 9.0, cardOct: 5.5, cardNov: 6.0, creditOct: 8.5, creditNov: 9.0 },
+  { sno: 8, branch: "Rajahmundry", cash: 8.0, upi: 12.0, card: 8.0, credit: 12.0, total: 40.0, cashOct: 7.0, cashNov: 7.5, upiOct: 10.5, upiNov: 11.5, cardOct: 7.0, cardNov: 7.5, creditOct: 11.0, creditNov: 11.5 },
+  { sno: 9, branch: "Bangalore", cash: 15.8, upi: 31.6, card: 21.0, credit: 36.8, total: 105.2, cashOct: 14.0, cashNov: 15.0, upiOct: 28.5, upiNov: 30.5, cardOct: 19.0, cardNov: 20.0, creditOct: 34.0, creditNov: 35.5 },
 ];
 
 const columns = [
   { key: "sno", label: "S.No", align: "center" },
   { key: "branch", label: "Branch", align: "left" },
-  { key: "credit", label: "Credit (₹L)", align: "right", render: (v) => `₹${v.toFixed(1)}L` },
-  { 
-    key: "creditPct", 
-    label: "Credit %", 
-    align: "center", 
-    render: (v) => <Badge variant="secondary" className="bg-chart-1/10 text-chart-1">{v}%</Badge>
-  },
-  { key: "upiCards", label: "UPI/Cards (₹L)", align: "right", render: (v) => `₹${v.toFixed(1)}L` },
-  { 
-    key: "upiCardsPct", 
-    label: "UPI %", 
-    align: "center", 
-    render: (v) => <Badge variant="secondary" className="bg-chart-2/10 text-chart-2">{v}%</Badge>
-  },
   { key: "cash", label: "Cash (₹L)", align: "right", render: (v) => `₹${v.toFixed(1)}L` },
-  { 
-    key: "cashPct", 
-    label: "Cash %", 
-    align: "center", 
-    render: (v) => <Badge variant="secondary" className="bg-chart-3/10 text-chart-3">{v}%</Badge>
-  },
+  { key: "upi", label: "UPI (₹L)", align: "right", render: (v) => `₹${v.toFixed(1)}L` },
+  { key: "card", label: "Card (₹L)", align: "right", render: (v) => `₹${v.toFixed(1)}L` },
+  { key: "credit", label: "Credit (₹L)", align: "right", render: (v) => `₹${v.toFixed(1)}L` },
   { key: "total", label: "Total", align: "right", render: (v) => <span className="font-semibold">₹{v.toFixed(1)}L</span> },
 ];
 
@@ -57,28 +37,36 @@ const PaymentMode = () => {
   const filteredData = useMemo(() => {
     return branchData.filter(item => {
       if (filters.branch && filters.branch !== "all" && item.branch.toLowerCase() !== filters.branch) return false;
-      if (filters.dateFrom && item.date < new Date(filters.dateFrom)) return false;
-      if (filters.dateTo && item.date > new Date(filters.dateTo)) return false;
       return true;
     });
   }, [filters]);
 
-  const totalCredit = filteredData.reduce((sum, b) => sum + b.credit, 0);
-  const totalUPI = filteredData.reduce((sum, b) => sum + b.upiCards, 0);
   const totalCash = filteredData.reduce((sum, b) => sum + b.cash, 0);
-  const grandTotal = totalCredit + totalUPI + totalCash;
+  const totalUPI = filteredData.reduce((sum, b) => sum + b.upi, 0);
+  const totalCard = filteredData.reduce((sum, b) => sum + b.card, 0);
+  const totalCredit = filteredData.reduce((sum, b) => sum + b.credit, 0);
+  const grandTotal = totalCash + totalUPI + totalCard + totalCredit;
 
   const pieData = [
-    { name: "Credit", value: totalCredit, color: "hsl(var(--chart-1))" },
-    { name: "UPI/Cards", value: totalUPI, color: "hsl(var(--chart-2))" },
     { name: "Cash", value: totalCash, color: "hsl(var(--chart-3))" },
+    { name: "UPI", value: totalUPI, color: "hsl(var(--chart-2))" },
+    { name: "Card", value: totalCard, color: "hsl(var(--chart-4))" },
+    { name: "Credit", value: totalCredit, color: "hsl(var(--chart-1))" },
+  ];
+
+  // 3-month trend
+  const trendData = [
+    { month: "Oct", Cash: filteredData.reduce((s,b) => s+b.cashOct,0), UPI: filteredData.reduce((s,b) => s+b.upiOct,0), Card: filteredData.reduce((s,b) => s+b.cardOct,0), Credit: filteredData.reduce((s,b) => s+b.creditOct,0) },
+    { month: "Nov", Cash: filteredData.reduce((s,b) => s+b.cashNov,0), UPI: filteredData.reduce((s,b) => s+b.upiNov,0), Card: filteredData.reduce((s,b) => s+b.cardNov,0), Credit: filteredData.reduce((s,b) => s+b.creditNov,0) },
+    { month: "Dec", Cash: totalCash, UPI: totalUPI, Card: totalCard, Credit: totalCredit },
   ];
 
   const stackedChartData = filteredData.map(b => ({
     name: b.branch.substring(0, 6),
-    Credit: b.credit,
-    UPI: b.upiCards,
     Cash: b.cash,
+    UPI: b.upi,
+    Card: b.card,
+    Credit: b.credit,
   }));
 
   return (
@@ -86,81 +74,36 @@ const PaymentMode = () => {
       <div className="space-y-4 md:space-y-6 animate-fade-in">
         <PageHeader
           title="Payment Mode Report"
-          description="Revenue breakdown by payment method across branches"
+          description="Cash / UPI / Card / Credit breakdown – Branch-wise (3-Month Trend)"
           icon={CreditCard}
-          badge="Daily/Weekly"
+          badge="3-Month View"
         />
 
         <ReportFilters
           showBranch
-          showPaymentMode
           showDateRange
           filters={filters}
           onFilterChange={setFilters}
         />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <KPICard
-            title="Credit Payments"
-            value={`₹${totalCredit.toFixed(1)}L`}
-            change={`${((totalCredit/grandTotal)*100).toFixed(0)}% of total`}
-            changeType="neutral"
-            icon={CreditCard}
-          />
-          <KPICard
-            title="UPI/Card Payments"
-            value={`₹${totalUPI.toFixed(1)}L`}
-            change={`${((totalUPI/grandTotal)*100).toFixed(0)}% of total`}
-            changeType="positive"
-            icon={Wallet}
-          />
-          <KPICard
-            title="Cash Payments"
-            value={`₹${totalCash.toFixed(1)}L`}
-            change={`${((totalCash/grandTotal)*100).toFixed(0)}% of total`}
-            changeType="neutral"
-            icon={Banknote}
-          />
-          <KPICard
-            title="Digital Adoption"
-            value={`${(((totalUPI+totalCredit)/grandTotal)*100).toFixed(0)}%`}
-            change="+5% vs last month"
-            changeType="positive"
-            icon={TrendingUp}
-          />
+          <KPICard title="Cash" value={`₹${totalCash.toFixed(1)}L`} change={`${((totalCash/grandTotal)*100).toFixed(0)}%`} changeType="neutral" icon={Banknote} />
+          <KPICard title="UPI" value={`₹${totalUPI.toFixed(1)}L`} change={`${((totalUPI/grandTotal)*100).toFixed(0)}%`} changeType="positive" icon={Smartphone} />
+          <KPICard title="Card" value={`₹${totalCard.toFixed(1)}L`} change={`${((totalCard/grandTotal)*100).toFixed(0)}%`} changeType="neutral" icon={CreditCard} />
+          <KPICard title="Credit" value={`₹${totalCredit.toFixed(1)}L`} change={`${((totalCredit/grandTotal)*100).toFixed(0)}%`} changeType="neutral" icon={Wallet} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Card className="shadow-card">
-            <CardHeader className="pb-2">
-              <CardTitle className="font-heading text-base md:text-lg">Payment Distribution</CardTitle>
-            </CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="font-heading text-base md:text-lg">Payment Distribution</CardTitle></CardHeader>
             <CardContent>
-              <div className="h-[240px] md:h-[280px]">
+              <div className="h-[280px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={85}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={3} dataKey="value">
+                      {pieData.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.color} />))}
                     </Pie>
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: "hsl(var(--card))", 
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        fontSize: "12px"
-                      }}
-                      formatter={(value) => [`₹${value.toFixed(1)}L`, '']}
-                    />
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value) => [`₹${value.toFixed(1)}L`, '']} />
                     <Legend wrapperStyle={{ fontSize: '11px' }} />
                   </PieChart>
                 </ResponsiveContainer>
@@ -169,40 +112,20 @@ const PaymentMode = () => {
           </Card>
 
           <Card className="shadow-card lg:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="font-heading text-base md:text-lg">Branch-wise Payment Mix (Stacked)</CardTitle>
-            </CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="font-heading text-base md:text-lg">3-Month Payment Trend</CardTitle></CardHeader>
             <CardContent>
-              <div className="h-[240px] md:h-[280px]">
+              <div className="h-[280px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stackedChartData} margin={{ top: 10, right: 10, left: -10, bottom: 60 }}>
+                  <BarChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={{ stroke: "hsl(var(--border))" }}
-                      tickLine={false}
-                      angle={-45}
-                      textAnchor="end"
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: "hsl(var(--card))", 
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        fontSize: "12px"
-                      }}
-                      formatter={(value) => [`₹${value.toFixed(1)}L`, '']}
-                    />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v.toFixed(0)}L`} />
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value) => [`₹${value.toFixed(1)}L`, '']} />
                     <Legend wrapperStyle={{ fontSize: '11px' }} />
-                    <Bar dataKey="Credit" fill="hsl(var(--chart-1))" stackId="a" />
+                    <Bar dataKey="Cash" fill="hsl(var(--chart-3))" stackId="a" />
                     <Bar dataKey="UPI" fill="hsl(var(--chart-2))" stackId="a" />
-                    <Bar dataKey="Cash" fill="hsl(var(--chart-3))" stackId="a" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Card" fill="hsl(var(--chart-4))" stackId="a" />
+                    <Bar dataKey="Credit" fill="hsl(var(--chart-1))" stackId="a" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -210,11 +133,34 @@ const PaymentMode = () => {
           </Card>
         </div>
 
+        {/* Branch-wise Stacked */}
+        <Card className="shadow-card">
+          <CardHeader className="pb-2"><CardTitle className="font-heading text-base md:text-lg">Branch-wise Payment Mix</CardTitle></CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stackedChartData} margin={{ top: 10, right: 10, left: -10, bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} angle={-45} textAnchor="end" />
+                  <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}L`} />
+                  <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value) => [`₹${value.toFixed(1)}L`, '']} />
+                  <Legend wrapperStyle={{ fontSize: '11px' }} />
+                  <Bar dataKey="Cash" fill="hsl(var(--chart-3))" stackId="a" />
+                  <Bar dataKey="UPI" fill="hsl(var(--chart-2))" stackId="a" />
+                  <Bar dataKey="Card" fill="hsl(var(--chart-4))" stackId="a" />
+                  <Bar dataKey="Credit" fill="hsl(var(--chart-1))" stackId="a" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
         <DataTable
           title="Branch-wise Payment Mode Breakdown"
           subtitle="December 2025 - All amounts in Lakhs"
           columns={columns}
           data={filteredData}
+          exportFilename="payment-mode-report"
         />
       </div>
     </DashboardLayout>
