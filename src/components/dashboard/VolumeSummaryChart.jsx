@@ -3,20 +3,20 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useNavigate } from "react-router-dom";
 
 const data = [
-  { name: "Cash", value: 17, color: "hsl(var(--chart-3))" },
-  { name: "UPI", value: 30, color: "hsl(var(--chart-2))" },
-  { name: "Card", value: 22, color: "hsl(var(--chart-4))" },
-  { name: "Credit", value: 31, color: "hsl(var(--chart-1))" },
+  { name: "Radiology", value: 9370, color: "hsl(var(--chart-1))" },
+  { name: "Lab", value: 13500, color: "hsl(var(--chart-4))" },
+  { name: "Cardiology", value: 2997, color: "hsl(var(--chart-2))" },
+  { name: "Others", value: 1580, color: "hsl(var(--chart-3))" },
 ];
 
-export function PaymentModeChart() {
+export function VolumeSummaryChart() {
   const navigate = useNavigate();
 
   return (
-    <Card className="shadow-card cursor-pointer hover:shadow-card-hover transition-shadow" onClick={() => navigate('/payment-mode')}>
+    <Card className="shadow-card cursor-pointer hover:shadow-card-hover transition-shadow" onClick={() => navigate('/dept-volume')}>
       <CardHeader className="pb-1 p-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="font-heading text-sm md:text-base">Payment Mode</CardTitle>
+          <CardTitle className="font-heading text-sm md:text-base">Volume Summary</CardTitle>
           <span className="text-xs text-primary">→</span>
         </div>
       </CardHeader>
@@ -31,7 +31,7 @@ export function PaymentModeChart() {
               </Pie>
               <Tooltip
                 contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }}
-                formatter={(value) => [`${value}%`, '']}
+                formatter={(value) => [value.toLocaleString(), '']}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -40,7 +40,7 @@ export function PaymentModeChart() {
           {data.map((item) => (
             <div key={item.name} className="flex items-center gap-1">
               <div className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-              <span className="text-[10px] text-muted-foreground">{item.name} {item.value}%</span>
+              <span className="text-[10px] text-muted-foreground">{item.name}</span>
             </div>
           ))}
         </div>

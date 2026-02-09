@@ -3,76 +3,42 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useNavigate } from "react-router-dom";
 
 const data = [
-  { name: "Lab", value: 42, color: "hsl(var(--chart-1))", drilldownUrl: "/lab-rad" },
-  { name: "Radiology", value: 58, color: "hsl(var(--chart-2))", drilldownUrl: "/lab-rad" },
+  { name: "Lab", value: 42, color: "hsl(var(--chart-1))" },
+  { name: "Radiology", value: 58, color: "hsl(var(--chart-2))" },
 ];
-
-const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12}>
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
-  );
-};
 
 export function LabRadSplitChart() {
   const navigate = useNavigate();
 
-  const handleClick = (data) => {
-    if (data && data.drilldownUrl) {
-      navigate(data.drilldownUrl);
-    }
-  };
-
   return (
-    <Card className="shadow-card">
-      <CardHeader className="pb-2">
-        <CardTitle className="font-heading text-base md:text-lg">Lab vs Radiology Split</CardTitle>
-        <p className="text-xs text-muted-foreground">Click segments to drill down</p>
+    <Card className="shadow-card cursor-pointer hover:shadow-card-hover transition-shadow" onClick={() => navigate('/lab-rad')}>
+      <CardHeader className="pb-1 p-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="font-heading text-sm md:text-base">Lab vs Radiology</CardTitle>
+          <span className="text-xs text-primary">→</span>
+        </div>
       </CardHeader>
-      <CardContent>
-        <div className="h-[220px] md:h-[280px]">
+      <CardContent className="p-4 pt-0">
+        <div className="h-[160px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-                labelLine={false}
-                label={renderCustomizedLabel}
-                onClick={handleClick}
-                style={{ cursor: 'pointer' }}
-              >
+              <Pie data={data} cx="50%" cy="50%" innerRadius={35} outerRadius={60} paddingAngle={5} dataKey="value">
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: "hsl(var(--card))", 
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                  fontSize: "12px"
-                }}
+              <Tooltip
+                contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }}
                 formatter={(value) => [`${value}%`, '']}
               />
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex justify-center gap-4 mt-2">
+        <div className="flex justify-center gap-3 mt-1">
           {data.map((item) => (
-            <div key={item.name} className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
-              <span className="text-xs md:text-sm text-muted-foreground">{item.name}</span>
+            <div key={item.name} className="flex items-center gap-1">
+              <div className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+              <span className="text-[10px] text-muted-foreground">{item.name} {item.value}%</span>
             </div>
           ))}
         </div>

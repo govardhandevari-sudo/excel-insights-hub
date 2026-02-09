@@ -230,6 +230,7 @@ const DeptVolume = () => {
           subtitle="Hourly data pull - Test counts by department"
           columns={columns}
           data={filteredData}
+          exportFilename="dept-volume-report"
         />
       </div>
     </DashboardLayout>

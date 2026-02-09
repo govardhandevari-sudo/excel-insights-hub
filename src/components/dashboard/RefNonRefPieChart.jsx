@@ -3,20 +3,18 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useNavigate } from "react-router-dom";
 
 const data = [
-  { name: "Cash", value: 17, color: "hsl(var(--chart-3))" },
-  { name: "UPI", value: 30, color: "hsl(var(--chart-2))" },
-  { name: "Card", value: 22, color: "hsl(var(--chart-4))" },
-  { name: "Credit", value: 31, color: "hsl(var(--chart-1))" },
+  { name: "Referral", value: 67, color: "hsl(var(--success))" },
+  { name: "Non-Referral", value: 33, color: "hsl(var(--chart-2))" },
 ];
 
-export function PaymentModeChart() {
+export function RefNonRefPieChart() {
   const navigate = useNavigate();
 
   return (
-    <Card className="shadow-card cursor-pointer hover:shadow-card-hover transition-shadow" onClick={() => navigate('/payment-mode')}>
+    <Card className="shadow-card cursor-pointer hover:shadow-card-hover transition-shadow" onClick={() => navigate('/ref-nonref')}>
       <CardHeader className="pb-1 p-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="font-heading text-sm md:text-base">Payment Mode</CardTitle>
+          <CardTitle className="font-heading text-sm md:text-base">Ref vs Non-Ref</CardTitle>
           <span className="text-xs text-primary">→</span>
         </div>
       </CardHeader>
@@ -24,7 +22,7 @@ export function PaymentModeChart() {
         <div className="h-[160px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={data} cx="50%" cy="50%" innerRadius={35} outerRadius={60} paddingAngle={2} dataKey="value">
+              <Pie data={data} cx="50%" cy="50%" innerRadius={35} outerRadius={60} paddingAngle={3} dataKey="value">
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
@@ -36,7 +34,7 @@ export function PaymentModeChart() {
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex flex-wrap justify-center gap-2 mt-1">
+        <div className="flex justify-center gap-3 mt-1">
           {data.map((item) => (
             <div key={item.name} className="flex items-center gap-1">
               <div className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />

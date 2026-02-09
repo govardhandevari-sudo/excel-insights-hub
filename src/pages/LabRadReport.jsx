@@ -165,6 +165,7 @@ const LabRadReport = () => {
           columns={columns}
           data={filteredData}
           rowClickable
+          exportFilename="lab-rad-report"
         />
       </div>
     </DashboardLayout>

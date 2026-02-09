@@ -6,9 +6,10 @@ import { LabRadSplitChart } from "@/components/dashboard/LabRadSplitChart";
 import { RevenueTrendChart } from "@/components/dashboard/RevenueTrendChart";
 import { TopPerformersCard } from "@/components/dashboard/TopPerformersCard";
 import { PaymentModeChart } from "@/components/dashboard/PaymentModeChart";
-import { WeeklyTrendStackedChart } from "@/components/dashboard/WeeklyTrendStackedChart";
 import { DepartmentHeatMap } from "@/components/dashboard/DepartmentHeatMap";
-import { MonthlyTrendAreaChart } from "@/components/dashboard/MonthlyTrendAreaChart";
+import { RefNonRefPieChart } from "@/components/dashboard/RefNonRefPieChart";
+import { VolumeSummaryChart } from "@/components/dashboard/VolumeSummaryChart";
+import { ThreeMonthTrendChart } from "@/components/dashboard/ThreeMonthTrendChart";
 import { ReportFilters } from "@/components/reports/ReportFilters";
 import { 
   TrendingUp, 
@@ -32,7 +33,7 @@ const Dashboard = () => {
               Dashboard
             </h1>
             <p className="text-sm md:text-base text-muted-foreground mt-1">
-              MegSan Diagnostics - December 2025 Performance Overview
+              MegSan Diagnostics - Performance Overview (3-Month Trend)
             </p>
           </div>
         </div>
@@ -46,7 +47,7 @@ const Dashboard = () => {
           onFilterChange={setFilters}
         />
 
-        {/* KPI Cards with Drill-down */}
+        {/* KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <KPICard
             title="MTD Revenue"
@@ -84,52 +85,46 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Charts Row 1 - Area Chart & Donut */}
+        {/* Row 1 - 3-Month Revenue Trend & Branch Revenue */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
-            <RevenueTrendChart />
-          </div>
-          <LabRadSplitChart />
-        </div>
-
-        {/* Charts Row 2 - Stacked Bar & Top Performers */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2">
-            <BranchRevenueChart />
+            <ThreeMonthTrendChart />
           </div>
           <TopPerformersCard />
         </div>
 
-        {/* Charts Row 3 - Weekly Stacked Trend & Monthly Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <WeeklyTrendStackedChart />
-          <MonthlyTrendAreaChart />
+        {/* Row 2 - Pie Charts: Lab/Rad, Ref/NonRef, Payment Mode, Volume */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <LabRadSplitChart />
+          <RefNonRefPieChart />
+          <PaymentModeChart />
+          <VolumeSummaryChart />
         </div>
 
-        {/* Charts Row 4 - Heat Map */}
+        {/* Row 3 - Branch Revenue Stacked Bar */}
+        <BranchRevenueChart />
+
+        {/* Row 4 - Heat Map */}
         <DepartmentHeatMap />
 
-        {/* Charts Row 5 - Payment Mode & Additional KPIs */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <PaymentModeChart />
-          <div className="grid grid-cols-2 gap-3 md:gap-4">
-            <KPICard
-              title="Avg Per Patient"
-              value="₹2,475"
-              change="+8.3%"
-              changeType="positive"
-              icon={Activity}
-              drilldownUrl="/avg-realisation"
-            />
-            <KPICard
-              title="Referral Rate"
-              value="67%"
-              change="+2.1%"
-              changeType="positive"
-              icon={ArrowUpRight}
-              drilldownUrl="/ref-nonref"
-            />
-          </div>
+        {/* Bottom KPIs */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <KPICard
+            title="Avg Per Patient"
+            value="₹2,475"
+            change="+8.3%"
+            changeType="positive"
+            icon={Activity}
+            drilldownUrl="/avg-realisation"
+          />
+          <KPICard
+            title="Referral Rate"
+            value="67%"
+            change="+2.1%"
+            changeType="positive"
+            icon={ArrowUpRight}
+            drilldownUrl="/ref-nonref"
+          />
         </div>
       </div>
     </DashboardLayout>

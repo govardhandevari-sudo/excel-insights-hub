@@ -6,7 +6,7 @@ import { DataTable } from "@/components/reports/DataTable";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, TrendingUp, Activity } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, PieChart, Pie, Cell } from "recharts";
 
 const departmentData = [
   { sno: 1, category: "RADIOLOGY", isHeader: true },
@@ -33,30 +33,9 @@ const departmentData = [
   { sno: "", department: "NCS", w52: 2.5, w51: 2.3, w50: 2.4, mtd: 9.5, nov: 9.0, oct: 8.5, drilldownUrl: "/dept-volume?dept=ncs" },
 ];
 
-const chartData = [
-  { name: "MRI", value: 108.5 },
-  { name: "Biochem", value: 135.0 },
-  { name: "CT Scan", value: 85.2 },
-  { name: "Ultrasound", value: 70.5 },
-  { name: "2D Echo", value: 48.8 },
-  { name: "X-Ray", value: 47.5 },
-];
-
-const trendData = [
-  { name: "MRI", oct: 98.5, nov: 102.3, dec: 108.5 },
-  { name: "Biochem", oct: 122.0, nov: 128.5, dec: 135.0 },
-  { name: "CT", oct: 76.8, nov: 80.5, dec: 85.2 },
-  { name: "USG", oct: 64.2, nov: 66.8, dec: 70.5 },
-];
-
 const columns = [
   { key: "sno", label: "S.No", align: "center" },
-  { 
-    key: "department", 
-    label: "Department", 
-    align: "left",
-    render: (v, row) => row.isHeader ? <span className="font-bold text-primary">{row.category}</span> : v
-  },
+  { key: "department", label: "Department", align: "left", render: (v, row) => row.isHeader ? <span className="font-bold text-primary">{row.category}</span> : v },
   { key: "w52", label: "W52", align: "right", render: (v) => v ? `₹${v.toFixed(1)}L` : "" },
   { key: "w51", label: "W51", align: "right", render: (v) => v ? `₹${v.toFixed(1)}L` : "" },
   { key: "w50", label: "W50", align: "right", render: (v) => v ? `₹${v.toFixed(1)}L` : "" },
@@ -77,160 +56,117 @@ const DeptRevenue = () => {
     });
   }, [filters]);
 
-  const totalMTD = filteredData.filter(d => !d.isHeader && d.mtd).reduce((sum, d) => sum + (d.mtd || 0), 0);
+  const actualData = filteredData.filter(d => !d.isHeader && d.mtd);
+  const totalMTD = actualData.reduce((sum, d) => sum + (d.mtd || 0), 0);
+
+  // Pie chart - department-wise
+  const pieData = [
+    { name: "Radiology", value: actualData.filter(d => ["MRI", "CT SCAN", "ULTRASOUND", "DOPPLER", "MAMMOGRAPHY", "XRAY"].includes(d.department)).reduce((s, d) => s + d.mtd, 0), color: "hsl(var(--chart-1))" },
+    { name: "Lab", value: actualData.filter(d => d.department === "BIOCHEMISTRY").reduce((s, d) => s + d.mtd, 0), color: "hsl(var(--chart-2))" },
+    { name: "Cardiology", value: actualData.filter(d => ["ECG", "2D Echo", "TMT"].includes(d.department)).reduce((s, d) => s + d.mtd, 0), color: "hsl(var(--chart-3))" },
+    { name: "Dental", value: actualData.filter(d => ["CBCT", "OPG"].includes(d.department)).reduce((s, d) => s + d.mtd, 0), color: "hsl(var(--chart-4))" },
+    { name: "Neuro", value: actualData.filter(d => ["EEG", "ENMG", "NCS"].includes(d.department)).reduce((s, d) => s + d.mtd, 0), color: "hsl(var(--chart-5))" },
+    { name: "Ortho", value: actualData.filter(d => d.department === "DEXA").reduce((s, d) => s + d.mtd, 0), color: "hsl(var(--primary))" },
+  ];
+
+  // Modality breakdown within Radiology
+  const radModalityData = actualData
+    .filter(d => ["MRI", "CT SCAN", "ULTRASOUND", "DOPPLER", "MAMMOGRAPHY", "XRAY"].includes(d.department))
+    .map(d => ({ name: d.department, value: d.mtd, color: "hsl(var(--chart-1))" }));
+
+  // 3-month trend for top departments
+  const trendData = actualData.sort((a, b) => b.mtd - a.mtd).slice(0, 5).map(d => ({
+    name: d.department.substring(0, 6),
+    Oct: d.oct,
+    Nov: d.nov,
+    Dec: d.mtd,
+  }));
 
   return (
     <DashboardLayout>
       <div className="space-y-4 md:space-y-6 animate-fade-in">
-        <PageHeader
-          title="Department Wise Revenue"
-          description="Revenue summary by medical department and service"
-          icon={Building2}
-          badge="Daily"
-        />
+        <PageHeader title="Department Wise Revenue" description="Pie chart view with modality breakdown (3-Month Trend)" icon={Building2} badge="3-Month View" />
 
-        <ReportFilters
-          showBranch
-          showDepartment
-          showDateRange
-          filters={filters}
-          onFilterChange={setFilters}
-        />
+        <ReportFilters showBranch showDepartment showDateRange filters={filters} onFilterChange={setFilters} />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <KPICard
-            title="Total MTD Revenue"
-            value={`₹${totalMTD.toFixed(1)}L`}
-            change="+9.2% vs Nov"
-            changeType="positive"
-            icon={TrendingUp}
-          />
-          <KPICard
-            title="Top Department"
-            value="Biochemistry"
-            change="₹135.0L MTD"
-            changeType="positive"
-            icon={Activity}
-            drilldownUrl="/dept-volume?dept=biochemistry"
-          />
-          <KPICard
-            title="Top Radiology"
-            value="MRI"
-            change="₹108.5L MTD"
-            changeType="positive"
-            icon={Building2}
-            drilldownUrl="/dept-volume?dept=mri"
-          />
-          <KPICard
-            title="Departments"
-            value="18"
-            change="Across 6 categories"
-            changeType="neutral"
-            icon={Building2}
-          />
+          <KPICard title="Total MTD Revenue" value={`₹${totalMTD.toFixed(1)}L`} change="+9.2% vs Nov" changeType="positive" icon={TrendingUp} />
+          <KPICard title="Top Department" value="Biochemistry" change="₹135.0L MTD" changeType="positive" icon={Activity} drilldownUrl="/dept-volume?dept=biochemistry" />
+          <KPICard title="Top Radiology" value="MRI" change="₹108.5L MTD" changeType="positive" icon={Building2} drilldownUrl="/dept-volume?dept=mri" />
+          <KPICard title="Departments" value="18" change="Across 6 categories" changeType="neutral" icon={Building2} />
         </div>
 
+        {/* Pie Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Department Category Pie */}
           <Card className="shadow-card">
-            <CardHeader className="pb-2">
-              <CardTitle className="font-heading text-base md:text-lg">Top Departments by Revenue</CardTitle>
-            </CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="font-heading text-base md:text-lg">Department-wise Revenue Split</CardTitle></CardHeader>
             <CardContent>
-              <div className="h-[280px] md:h-[300px]">
+              <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 30, left: 50, bottom: 0 }}>
+                  <PieChart>
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={100} paddingAngle={2} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value) => [`₹${value.toFixed(1)}L`, '']} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Radiology Modality Breakdown */}
+          <Card className="shadow-card">
+            <CardHeader className="pb-2"><CardTitle className="font-heading text-base md:text-lg">Radiology → Modality Breakdown</CardTitle></CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={radModalityData} layout="vertical" margin={{ top: 10, right: 30, left: 80, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis 
-                      type="number" 
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(v) => `₹${v}L`}
-                    />
-                    <YAxis 
-                      dataKey="name" 
-                      type="category" 
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: "hsl(var(--card))", 
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        fontSize: "12px"
-                      }}
-                      formatter={(value) => [`₹${value.toFixed(1)}L`, 'Revenue']}
-                    />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}L`} />
+                    <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value) => [`₹${value.toFixed(1)}L`, 'Revenue']} />
                     <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
-
-          <Card className="shadow-card">
-            <CardHeader className="pb-2">
-              <CardTitle className="font-heading text-base md:text-lg">Monthly Trend (Area)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[280px] md:h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorOctDept" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorNovDept" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorDecDept" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={{ stroke: "hsl(var(--border))" }}
-                      tickLine={false}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(v) => `₹${v}L`}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: "hsl(var(--card))", 
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        fontSize: "12px"
-                      }}
-                      formatter={(value) => [`₹${value}L`, '']}
-                    />
-                    <Legend wrapperStyle={{ fontSize: '11px' }} />
-                    <Area type="monotone" dataKey="oct" name="Oct" stroke="hsl(var(--chart-3))" fillOpacity={1} fill="url(#colorOctDept)" />
-                    <Area type="monotone" dataKey="nov" name="Nov" stroke="hsl(var(--chart-2))" fillOpacity={1} fill="url(#colorNovDept)" />
-                    <Area type="monotone" dataKey="dec" name="Dec" stroke="hsl(var(--chart-1))" fillOpacity={1} fill="url(#colorDecDept)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
         </div>
+
+        {/* 3-Month Trend */}
+        <Card className="shadow-card">
+          <CardHeader className="pb-2"><CardTitle className="font-heading text-base md:text-lg">Top Departments - 3 Month Trend</CardTitle></CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorOctDR" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.3}/><stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0}/></linearGradient>
+                    <linearGradient id="colorNovDR" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.3}/><stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/></linearGradient>
+                    <linearGradient id="colorDecDR" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/><stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/></linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}L`} />
+                  <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value) => [`₹${value}L`, '']} />
+                  <Legend wrapperStyle={{ fontSize: '11px' }} />
+                  <Area type="monotone" dataKey="Oct" stroke="hsl(var(--chart-3))" fillOpacity={1} fill="url(#colorOctDR)" />
+                  <Area type="monotone" dataKey="Nov" stroke="hsl(var(--chart-2))" fillOpacity={1} fill="url(#colorNovDR)" />
+                  <Area type="monotone" dataKey="Dec" stroke="hsl(var(--chart-1))" fillOpacity={1} fill="url(#colorDecDR)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
         <DataTable
           title="Complete Department Revenue Summary"
-          subtitle="Hourly data pull - All amounts in Lakhs - Click rows to drill down"
+          subtitle="All amounts in Lakhs - Click rows to drill down"
           columns={columns}
           data={filteredData}
           rowClickable
+          exportFilename="dept-revenue-report"
         />
       </div>
     </DashboardLayout>
