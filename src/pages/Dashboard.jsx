@@ -33,7 +33,7 @@ const Dashboard = () => {
               Dashboard
             </h1>
             <p className="text-sm md:text-base text-muted-foreground mt-1">
-              MegSan Diagnostics - Performance Overview (3-Month Trend)
+                Focus Diagnostics - December 2025 Performance Overview
             </p>
           </div>
         </div>
