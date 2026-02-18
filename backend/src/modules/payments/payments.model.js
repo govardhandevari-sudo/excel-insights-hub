@@ -223,8 +223,8 @@ exports.countBranchPaymentTable = async ({
     FROM (
       SELECT c.centreid
       FROM f_reciept r
-      JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
-      JOIN centre c ON c.centreid = lt.centreid
+      left JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
+      left JOIN centre c ON c.centreid = lt.centreid
       ${whereClause}
       GROUP BY c.centreid
     ) x
