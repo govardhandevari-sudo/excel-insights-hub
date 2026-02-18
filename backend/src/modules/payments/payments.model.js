@@ -83,8 +83,8 @@ exports.getPaymentSummaryByMode = async ({
       SUM(r.amount) AS amount
     FROM f_reciept r
     JOIN payment_mode pm ON pm.paymentmodeid = r.paymentmodeid
-    JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
-    JOIN centre c ON c.centreid = lt.centreid
+    left JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
+    left JOIN centre c ON c.centreid = lt.centreid
     ${whereClause}
     GROUP BY pm.paymentmodeid, pm.paymentmode
   `;
@@ -130,8 +130,8 @@ exports.getBranchPaymentDistribution = async ({
       SUM(r.amount) AS amount
     FROM f_reciept r
     JOIN payment_mode pm ON pm.paymentmodeid = r.paymentmodeid
-    JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
-    JOIN centre c ON c.centreid = lt.centreid
+    left JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
+    left JOIN centre c ON c.centreid = lt.centreid
     ${whereClause}
     GROUP BY c.centreid, c.centre, pm.paymentmode
     ORDER BY c.centre
@@ -186,8 +186,8 @@ exports.getBranchPaymentTable = async ({
       SUM(r.amount) AS total
     FROM f_reciept r
     JOIN payment_mode pm ON pm.paymentmodeid = r.paymentmodeid
-    JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
-    JOIN centre c ON c.centreid = lt.centreid
+    left JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
+    left JOIN centre c ON c.centreid = lt.centreid
     ${whereClause}
     GROUP BY c.centreid, c.centre
     ORDER BY ${orderCol} ${sortOrder}
