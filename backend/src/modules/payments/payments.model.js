@@ -26,9 +26,10 @@ exports.getPaymentFilters = async ({ stateid, cityid }) => {
   );
 
   /* Cities */
-  let citySql = `SELECT ID AS id, City AS city, stateID AS stateid
-                 FROM city_master
-                 WHERE IsActive = 1`;
+  let citySql = `SELECT cm.ID AS id, cm.City AS city, cm.stateID AS stateid, sm.state
+                 FROM city_master cm
+                 join state_master sm on sm.id = cm.stateID and sm.IsActive = 1
+                 WHERE cm.IsActive = 1 order by state asc, city asc`;
   if (stateid) {
     filters.cities = await db.query(
       citySql + ` AND stateID = ? ORDER BY City`,
@@ -41,13 +42,16 @@ exports.getPaymentFilters = async ({ stateid, cityid }) => {
   /* Centres */
   const centreValues = [];
   let centreSql = `
-    SELECT CentreID AS centreid,
-           Centre   AS centre,
-           StateID  AS stateid,
-           CityID   AS cityid
-    FROM centre_master
-    WHERE isActive = 1
-  `;
+                  SELECT 
+                    c.CentreID AS centreid,
+                    c.Centre   AS centre,
+                    c.StateID  AS stateid,
+                    c.CityID   AS cityid
+                FROM centre_master c
+                JOIN state_master sm ON sm.id      = c.StateID AND sm.IsActive = 1
+                JOIN city_master  cm ON cm.ID      = c.CityID  AND cm.IsActive = 1
+                WHERE c.isActive = 1
+                ORDER BY c.Centre`;
 
   if (stateid) {
     centreSql += ` AND StateID = ?`;
