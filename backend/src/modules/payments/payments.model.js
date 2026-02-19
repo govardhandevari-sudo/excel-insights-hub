@@ -1,53 +1,82 @@
 const db = require('../common/base.repository');
 const mysql = require('mysql2');
 
+// ─── Schema reference ────────────────────────────────────────────────────────
+// state_master   : id, state, IsActive, dtEntry, Updatedate
+// city_master    : ID, City, stateID, Country, UpdateDate, IsActive, dtEntry
+// centre_master  : CentreID, CentreCode, Centre, isActive, Landline, Mobile,
+//                  Email, Address, CityID, City, StateID, State, dtEntry
+// payment_mode   : PaymentModeId, PaymentMode, Active
+// f_reciept      : ID, ReceiptNo, LedgerTransactionID, LedgerTransactionNo,
+//                  PaymentModeID, PaymentMode, Amount, EntryDateTime, CentreID,
+//                  IsCancel, ...
+// f_ledgertransaction : LedgerTransactionID, LedgerTransactionNo, CentreID,
+//                       Patient_ID, Date, NetAmount, GrossAmount, ...
+// ─────────────────────────────────────────────────────────────────────────────
+
 exports.getPaymentFilters = async ({ stateid, cityid }) => {
   const filters = {};
-  const where = [];
-  const values = [];
 
   /* States */
   filters.states = await db.query(
-    `SELECT id, state FROM state WHERE isactive = 1 ORDER BY state`
+    `SELECT id, state
+     FROM state_master
+     WHERE IsActive = 1
+     ORDER BY state`
   );
 
   /* Cities */
-  let citySql = `SELECT id, city, stateid FROM city WHERE isactive = 1`;
+  let citySql = `SELECT ID AS id, City AS city, stateID AS stateid
+                 FROM city_master
+                 WHERE IsActive = 1`;
   if (stateid) {
-    citySql += ` AND stateid = ?`;
-    filters.cities = await db.query(citySql + ` ORDER BY city`, [stateid]);
+    filters.cities = await db.query(
+      citySql + ` AND stateID = ? ORDER BY City`,
+      [stateid]
+    );
   } else {
-    filters.cities = await db.query(citySql + ` ORDER BY city`);
+    filters.cities = await db.query(citySql + ` ORDER BY City`);
   }
 
   /* Centres */
+  const centreValues = [];
   let centreSql = `
-    SELECT centreid, centre, stateid, cityid
-    FROM centre
-    WHERE isactive = 1
+    SELECT CentreID AS centreid,
+           Centre   AS centre,
+           StateID  AS stateid,
+           CityID   AS cityid
+    FROM centre_master
+    WHERE isActive = 1
   `;
 
   if (stateid) {
-    centreSql += ` AND stateid = ?`;
-    values.push(stateid);
+    centreSql += ` AND StateID = ?`;
+    centreValues.push(stateid);
   }
   if (cityid) {
-    centreSql += ` AND cityid = ?`;
-    values.push(cityid);
+    centreSql += ` AND CityID = ?`;
+    centreValues.push(cityid);
   }
 
-  filters.centres = await db.query(centreSql + ` ORDER BY centre`, values);
+  filters.centres = await db.query(
+    centreSql + ` ORDER BY Centre`,
+    centreValues
+  );
 
-  /* Payment modes (AUTHORITATIVE SOURCE) */
+  /* Payment modes */
   filters.paymentModes = await db.query(
-    `SELECT paymentmodeid, paymentmode
+    `SELECT PaymentModeId AS paymentmodeid,
+            PaymentMode   AS paymentmode
      FROM payment_mode
-     WHERE active = 1
-     ORDER BY paymentmode`
+     WHERE Active = 1
+     ORDER BY PaymentMode`
   );
 
   return filters;
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 exports.getPaymentSummaryByMode = async ({
   fromDate,
   toDate,
@@ -58,42 +87,48 @@ exports.getPaymentSummaryByMode = async ({
   const where = [];
   const values = [];
 
-  where.push(`DATE(r.entrydatetime) BETWEEN ? AND ?`);
+  where.push(`DATE(r.EntryDateTime) BETWEEN ? AND ?`);
   values.push(fromDate, toDate);
 
   if (centreid) {
-    where.push(`lt.centreid = ?`);
+    where.push(`lt.CentreID = ?`);
     values.push(centreid);
   }
   if (cityid) {
-    where.push(`c.cityid = ?`);
+    where.push(`c.CityID = ?`);
     values.push(cityid);
   }
   if (stateid) {
-    where.push(`c.stateid = ?`);
+    where.push(`c.StateID = ?`);
     values.push(stateid);
   }
+
+  // Exclude cancelled receipts
+  where.push(`r.IsCancel = 0`);
 
   const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
   const sql = `
     SELECT
-      pm.paymentmodeid,
-      pm.paymentmode,
-      SUM(r.amount) AS amount
+      pm.PaymentModeId  AS paymentmodeid,
+      pm.PaymentMode    AS paymentmode,
+      SUM(r.Amount)     AS amount
     FROM f_reciept r
-    JOIN payment_mode pm ON pm.paymentmodeid = r.paymentmodeid
-    left JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
-    left JOIN centre c ON c.centreid = lt.centreid
+    JOIN  payment_mode        pm ON pm.PaymentModeId       = r.PaymentModeID
+    LEFT JOIN f_ledgertransaction lt ON lt.LedgerTransactionID = r.LedgerTransactionID
+    LEFT JOIN centre_master       c  ON c.CentreID             = lt.CentreID
     ${whereClause}
-    GROUP BY pm.paymentmodeid, pm.paymentmode
+    GROUP BY pm.PaymentModeId, pm.PaymentMode
+    ORDER BY pm.PaymentMode
   `;
-console.log(
-  mysql.format(sql, values)
-);
+
+  console.log(mysql.format(sql, values));
 
   return db.query(sql, values);
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 exports.getBranchPaymentDistribution = async ({
   fromDate,
   toDate,
@@ -104,45 +139,45 @@ exports.getBranchPaymentDistribution = async ({
   const where = [];
   const values = [];
 
-  where.push(`DATE(r.entrydatetime) BETWEEN ? AND ?`);
+  where.push(`DATE(r.EntryDateTime) BETWEEN ? AND ?`);
   values.push(fromDate, toDate);
 
   if (centreid) {
-    where.push(`c.centreid = ?`);
+    where.push(`c.CentreID = ?`);
     values.push(centreid);
   }
   if (cityid) {
-    where.push(`c.cityid = ?`);
+    where.push(`c.CityID = ?`);
     values.push(cityid);
   }
   if (stateid) {
-    where.push(`c.stateid = ?`);
+    where.push(`c.StateID = ?`);
     values.push(stateid);
   }
+
+  where.push(`r.IsCancel = 0`);
 
   const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
   const sql = `
     SELECT
-      c.centreid,
-      c.centre,
-      pm.paymentmode,
-      SUM(r.amount) AS amount
+      c.CentreID     AS centreid,
+      c.Centre       AS centre,
+      pm.PaymentMode AS paymentmode,
+      SUM(r.Amount)  AS amount
     FROM f_reciept r
-    JOIN payment_mode pm ON pm.paymentmodeid = r.paymentmodeid
-    left JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
-    left JOIN centre c ON c.centreid = lt.centreid
+    JOIN  payment_mode        pm ON pm.PaymentModeId       = r.PaymentModeID
+    LEFT JOIN f_ledgertransaction lt ON lt.LedgerTransactionID = r.LedgerTransactionID
+    LEFT JOIN centre_master       c  ON c.CentreID             = lt.CentreID
     ${whereClause}
-    GROUP BY c.centreid, c.centre, pm.paymentmode
-    ORDER BY c.centre
+    GROUP BY c.CentreID, c.Centre, pm.PaymentMode
+    ORDER BY c.Centre
   `;
 
   return db.query(sql, values);
 };
 
-const DATE_EXPR = `
-STR_TO_DATE(SUBSTRING(r.entrydatetime,1,10), '%d-%m-%Y')
-`;
+// ─────────────────────────────────────────────────────────────────────────────
 
 exports.getBranchPaymentTable = async ({
   fromDate, toDate,
@@ -153,50 +188,54 @@ exports.getBranchPaymentTable = async ({
   const where = [];
   const values = [];
 
-  where.push(`
-    ${DATE_EXPR} BETWEEN
-    STR_TO_DATE(?, '%d-%m-%Y') AND STR_TO_DATE(?, '%d-%m-%Y')
-  `);
+  // EntryDateTime is stored as a proper DATETIME — use DATE() directly
+  where.push(`DATE(r.EntryDateTime) BETWEEN ? AND ?`);
   values.push(fromDate, toDate);
 
-  if (centreid) { where.push(`c.centreid = ?`); values.push(centreid); }
-  if (cityid)   { where.push(`c.cityid = ?`); values.push(cityid); }
-  if (stateid)  { where.push(`c.stateid = ?`); values.push(stateid); }
-  if (search)   { where.push(`c.centre LIKE ?`); values.push(`%${search}%`); }
+  if (centreid) { where.push(`c.CentreID = ?`);  values.push(centreid); }
+  if (cityid)   { where.push(`c.CityID = ?`);    values.push(cityid);   }
+  if (stateid)  { where.push(`c.StateID = ?`);   values.push(stateid);  }
+  if (search)   { where.push(`c.Centre LIKE ?`); values.push(`%${search}%`); }
+
+  where.push(`r.IsCancel = 0`);
 
   const whereClause = `WHERE ${where.join(' AND ')}`;
 
-  // Map sort keys to SQL-safe expressions
   const sortMap = {
-    centre: 'c.centre',
-    credit: 'credit',
-    upi: 'upi',
-    cash: 'cash',
-    total: 'total'
+    centre : 'c.Centre',
+    credit : 'credit',
+    upi    : 'upi',
+    cash   : 'cash',
+    total  : 'total'
   };
-  const orderCol = sortMap[sortBy] || 'c.centre';
+  const orderCol   = sortMap[sortBy]    || 'c.Centre';
+  const orderDir   = sortOrder === 'DESC' ? 'DESC' : 'ASC';
 
   const sql = `
     SELECT
-      c.centreid,
-      c.centre AS branch,
-      SUM(CASE WHEN pm.paymentmode = 'Credit' THEN r.amount ELSE 0 END) AS credit,
-      SUM(CASE WHEN pm.paymentmode = 'Cash' THEN r.amount ELSE 0 END) AS cash,
-      SUM(CASE WHEN pm.paymentmode NOT IN ('Cash','Credit') THEN r.amount ELSE 0 END) AS upi,
-      SUM(r.amount) AS total
+      c.CentreID AS centreid,
+      c.Centre   AS branch,
+      SUM(CASE WHEN pm.PaymentMode = 'Credit'
+               THEN r.Amount ELSE 0 END) AS credit,
+      SUM(CASE WHEN pm.PaymentMode = 'Cash'
+               THEN r.Amount ELSE 0 END) AS cash,
+      SUM(CASE WHEN pm.PaymentMode NOT IN ('Cash', 'Credit')
+               THEN r.Amount ELSE 0 END) AS upi,
+      SUM(r.Amount)                        AS total
     FROM f_reciept r
-    JOIN payment_mode pm ON pm.paymentmodeid = r.paymentmodeid
-    left JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
-    left JOIN centre c ON c.centreid = lt.centreid
+    JOIN  payment_mode        pm ON pm.PaymentModeId       = r.PaymentModeID
+    LEFT JOIN f_ledgertransaction lt ON lt.LedgerTransactionID = r.LedgerTransactionID
+    LEFT JOIN centre_master       c  ON c.CentreID             = lt.CentreID
     ${whereClause}
-    GROUP BY c.centreid, c.centre
-    ORDER BY ${orderCol} ${sortOrder}
+    GROUP BY c.CentreID, c.Centre
+    ORDER BY ${orderCol} ${orderDir}
     LIMIT ? OFFSET ?
   `;
 
-  const rows = await db.query(sql, [...values, limit, offset]);
-  return rows;
+  return db.query(sql, [...values, limit, offset]);
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 exports.countBranchPaymentTable = async ({
   fromDate, toDate,
@@ -205,34 +244,36 @@ exports.countBranchPaymentTable = async ({
   const where = [];
   const values = [];
 
-  where.push(`
-    ${DATE_EXPR} BETWEEN
-    STR_TO_DATE(?, '%d-%m-%Y') AND STR_TO_DATE(?, '%d-%m-%Y')
-  `);
+  where.push(`DATE(r.EntryDateTime) BETWEEN ? AND ?`);
   values.push(fromDate, toDate);
 
-  if (centreid) { where.push(`c.centreid = ?`); values.push(centreid); }
-  if (cityid)   { where.push(`c.cityid = ?`); values.push(cityid); }
-  if (stateid)  { where.push(`c.stateid = ?`); values.push(stateid); }
-  if (search)   { where.push(`c.centre LIKE ?`); values.push(`%${search}%`); }
+  if (centreid) { where.push(`c.CentreID = ?`);  values.push(centreid); }
+  if (cityid)   { where.push(`c.CityID = ?`);    values.push(cityid);   }
+  if (stateid)  { where.push(`c.StateID = ?`);   values.push(stateid);  }
+  if (search)   { where.push(`c.Centre LIKE ?`); values.push(`%${search}%`); }
+
+  where.push(`r.IsCancel = 0`);
 
   const whereClause = `WHERE ${where.join(' AND ')}`;
 
   const sql = `
     SELECT COUNT(*) AS totalRecords
     FROM (
-      SELECT c.centreid
+      SELECT c.CentreID
       FROM f_reciept r
-      left JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
-      left JOIN centre c ON c.centreid = lt.centreid
+      LEFT JOIN f_ledgertransaction lt ON lt.LedgerTransactionID = r.LedgerTransactionID
+      LEFT JOIN centre_master       c  ON c.CentreID             = lt.CentreID
       ${whereClause}
-      GROUP BY c.centreid
+      GROUP BY c.CentreID
     ) x
   `;
 
   const res = await db.query(sql, values);
   return res[0]?.totalRecords || 0;
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 exports.exportBranchPaymentTable = async ({
   fromDate, toDate,
   stateid, cityid, centreid, search,
@@ -241,46 +282,45 @@ exports.exportBranchPaymentTable = async ({
   const where = [];
   const values = [];
 
-  const DATE_EXPR = `
-    STR_TO_DATE(SUBSTRING(r.entrydatetime,1,10), '%d-%m-%Y')
-  `;
-
-  where.push(`
-    ${DATE_EXPR} BETWEEN
-    STR_TO_DATE(?, '%d-%m-%Y') AND STR_TO_DATE(?, '%d-%m-%Y')
-  `);
+  where.push(`DATE(r.EntryDateTime) BETWEEN ? AND ?`);
   values.push(fromDate, toDate);
 
-  if (centreid) { where.push(`c.centreid = ?`); values.push(centreid); }
-  if (cityid)   { where.push(`c.cityid = ?`); values.push(cityid); }
-  if (stateid)  { where.push(`c.stateid = ?`); values.push(stateid); }
-  if (search)   { where.push(`c.centre LIKE ?`); values.push(`%${search}%`); }
+  if (centreid) { where.push(`c.CentreID = ?`);  values.push(centreid); }
+  if (cityid)   { where.push(`c.CityID = ?`);    values.push(cityid);   }
+  if (stateid)  { where.push(`c.StateID = ?`);   values.push(stateid);  }
+  if (search)   { where.push(`c.Centre LIKE ?`); values.push(`%${search}%`); }
+
+  where.push(`r.IsCancel = 0`);
 
   const whereClause = `WHERE ${where.join(' AND ')}`;
 
   const sortMap = {
-    centre: 'c.centre',
-    credit: 'credit',
-    upi: 'upi',
-    cash: 'cash',
-    total: 'total'
+    centre : 'c.Centre',
+    credit : 'credit',
+    upi    : 'upi',
+    cash   : 'cash',
+    total  : 'total'
   };
-  const orderCol = sortMap[sortBy] || 'c.centre';
+  const orderCol = sortMap[sortBy] || 'c.Centre';
+  const orderDir = sortOrder === 'DESC' ? 'DESC' : 'ASC';
 
   const sql = `
     SELECT
-      c.centre AS branch,
-      SUM(CASE WHEN pm.paymentmode = 'Credit' THEN r.amount ELSE 0 END) AS credit,
-      SUM(CASE WHEN pm.paymentmode = 'Cash' THEN r.amount ELSE 0 END) AS cash,
-      SUM(CASE WHEN pm.paymentmode NOT IN ('Cash','Credit') THEN r.amount ELSE 0 END) AS upi,
-      SUM(r.amount) AS total
+      c.Centre  AS branch,
+      SUM(CASE WHEN pm.PaymentMode = 'Credit'
+               THEN r.Amount ELSE 0 END) AS credit,
+      SUM(CASE WHEN pm.PaymentMode = 'Cash'
+               THEN r.Amount ELSE 0 END) AS cash,
+      SUM(CASE WHEN pm.PaymentMode NOT IN ('Cash', 'Credit')
+               THEN r.Amount ELSE 0 END) AS upi,
+      SUM(r.Amount)                        AS total
     FROM f_reciept r
-    JOIN payment_mode pm ON pm.paymentmodeid = r.paymentmodeid
-    JOIN f_ledgertransaction lt ON lt.ledgertransactionid = r.ledgertransactionid
-    JOIN centre c ON c.centreid = lt.centreid
+    JOIN  payment_mode        pm ON pm.PaymentModeId       = r.PaymentModeID
+    JOIN  f_ledgertransaction lt ON lt.LedgerTransactionID = r.LedgerTransactionID
+    JOIN  centre_master       c  ON c.CentreID             = lt.CentreID
     ${whereClause}
-    GROUP BY c.centreid, c.centre
-    ORDER BY ${orderCol} ${sortOrder || 'ASC'}
+    GROUP BY c.CentreID, c.Centre
+    ORDER BY ${orderCol} ${orderDir}
   `;
 
   return db.query(sql, values);
