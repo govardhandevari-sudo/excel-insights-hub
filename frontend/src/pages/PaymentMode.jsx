@@ -19,16 +19,11 @@ import {
   YAxis,
   CartesianGrid
 } from "recharts";
+import { Button } from "@/components/ui/button";
+
 import { api } from "@/services/api";
 
-/* ===================== DATE UTILS ===================== */
-const formatDDMMYYYY = (value) => {
-  if (!value) return "";
-  const d = value instanceof Date ? value : new Date(value);
-  if (isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-GB").replaceAll("/", "-");
-};
-
+/* ===================== DEFAULT DATE ===================== */
 const getDefault3MonthRange = () => {
   const to = new Date();
   const from = new Date();
@@ -36,7 +31,7 @@ const getDefault3MonthRange = () => {
   return { from, to };
 };
 
-/* ===================== TABLE COLUMNS (UNCHANGED) ===================== */
+/* ===================== TABLE COLUMNS ===================== */
 const columns = [
   { key: "branch", label: "Branch", align: "left" },
   { key: "cash", label: "Cash (₹L)", align: "right", render: v => `₹${v.toFixed(1)}L` },
@@ -51,9 +46,10 @@ const columns = [
 ];
 
 const PaymentMode = () => {
-  /* ===================== FILTER STATE ===================== */
+
   const { from, to } = getDefault3MonthRange();
 
+  /* ===================== FILTER STATE ===================== */
   const [filters, setFilters] = useState({
     stateid: "",
     cityid: "",
@@ -69,18 +65,24 @@ const PaymentMode = () => {
     centres: []
   });
 
+  const [pagination, setPagination] = useState({
+    page: 1,
+    perPage: 10,
+    totalRecords: 0,
+    totalPages: 1
+  });
+
   /* ===================== DATA STATES ===================== */
   const [summary, setSummary] = useState(null);
-  const [chartData, setChartData] = useState({ branches: [] });
+  const [chartData, setChartData] = useState([]);
+  const [tableRows, setTableRows] = useState([]);
 
   const [tableState] = useState({
     page: 1,
     perPage: 10
   });
 
-  const [tableRows, setTableRows] = useState([]);
-
-  /* ===================== LOAD FILTER MASTERS ===================== */
+  /* ===================== LOAD FILTER OPTIONS ===================== */
   useEffect(() => {
     api.get("/payments/filters", {
       params: {
@@ -88,15 +90,17 @@ const PaymentMode = () => {
         cityid: filters.cityid || undefined
       }
     }).then(res => { 
+      const f = res.data.data?.filters || {};
+
       setMasters({
-        states: res.data.data.states || [],
-        cities: res.data.data.cities || [],
-        centres: res.data.data.centres || []
+        states: f.states || [],
+        cities: f.cities || [],
+        centres: f.centres || []
       });
     });
   }, [filters.stateid, filters.cityid]);
 
-  /* ===================== NORMALIZED API PARAMS ===================== */
+  /* ===================== API PARAM NORMALIZATION ===================== */
   const apiParams = useMemo(() => {
     if (!filters.fromDate || !filters.toDate) return null;
 
@@ -104,25 +108,20 @@ const PaymentMode = () => {
       stateid: filters.stateid || undefined,
       cityid: filters.cityid || undefined,
       centreid: filters.centreid || undefined,
-      fromDate: formatDDMMYYYY(filters.fromDate),
-      toDate: formatDDMMYYYY(filters.toDate)
+      fromDate: filters.fromDate,
+      toDate: filters.toDate
     };
-  }, [
-    filters.stateid,
-    filters.cityid,
-    filters.centreid,
-    filters.fromDate,
-    filters.toDate
-  ]);
+  }, [filters]);
 
-  /* ===================== MAIN DATA LOAD (ONE PLACE) ===================== */
+  /* ===================== LOAD DATA ===================== */
   useEffect(() => {
     if (!apiParams) return;
 
-    /* ---- SUMMARY ---- */
+    /* SUMMARY */
     api.get("/payments/summary", { params: apiParams })
-      .then(res => {
-        const s = res.data.data || {}; console.log("resdata ",s); 
+      .then(res => { console.log(res.data)
+        const s = res.data.data?.summary || {};
+
         setSummary({
           cash: s.cash || { amount: 0, percentage: 0 },
           upi: s.upi || { amount: 0, percentage: 0 },
@@ -131,96 +130,135 @@ const PaymentMode = () => {
         });
       });
 
-    /* ---- CHARTS ---- */
+    /* CHART */
     api.get("/payments/branch-distribution", { params: apiParams })
       .then(res => {
-        setChartData({
-          branches: Array.isArray(res.data?.branches)
-            ? res.data.branches
-            : []
-        });
+        const rows = res.data.data?.rows || [];
+        setChartData(rows);
       });
 
-    /* ---- TABLE ---- */
-    api.get("/payments/branch-table", {
+   api.get("/payments/branch-table", {
       params: {
         ...apiParams,
-        page: tableState.page,
-        perPage: tableState.perPage
+        page: pagination.page,
+        perPage: pagination.perPage
       }
     }).then(res => {
-      setTableRows(Array.isArray(res.data?.data) ? res.data.data : []);
+
+      const rows = res.data?.data?.rows || [];
+      const pg = res.data?.data?.pagination || {};
+
+      setTableRows(rows);
+
+      setPagination(prev => ({
+        ...prev,
+        page: pg.page || 1,
+        perPage: pg.perPage || 10,
+        totalRecords: pg.totalRecords || 0,
+        totalPages: pg.totalPages || 1
+      }));
     });
 
-  }, [apiParams, tableState.page, tableState.perPage]);
 
-  /* ===================== DERIVED UI DATA ===================== */
+  }, [apiParams, pagination.page, pagination.perPage]);
+
+  const handleExport = async () => {
+  const response = await api.get(
+    "/payments/branch-table/export-xlsx",
+    {
+      params: {
+        ...apiParams,
+        search: "",
+        sortBy: "",
+        sortOrder: ""
+      },
+      responseType: "blob"
+    }
+  );
+
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+  link.href = url;
+
+  link.setAttribute(
+    "download",
+    `payment_report_${apiParams.fromDate}_to_${apiParams.toDate}.xlsx`
+  );
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};
+
+  /* ===================== DERIVED DATA ===================== */
+
   const pieData = summary ? [
     { name: "Cash", value: summary.cash.amount, color: "hsl(var(--chart-3))" },
     { name: "UPI", value: summary.upi.amount, color: "hsl(var(--chart-2))" },
     { name: "Credit", value: summary.credit.amount, color: "hsl(var(--chart-1))" }
   ] : [];
 
-  const stackedChartData = chartData.branches.map(b => ({
-    name: (b.centre || "").substring(0, 6),
-    Cash: b.cash || 0,
-    UPI: b.upi || 0,
-    Credit: b.credit || 0
+  const stackedChartData = chartData.map(b => ({
+    name: (b.branch || "").substring(0, 20),
+    Cash: Number(b.cash || 0),
+    UPI: Number(b.upi || 0),
+    Credit: Number(b.credit || 0)
   }));
 
   /* ===================== RENDER ===================== */
+
   return (
     <DashboardLayout>
       <div className="space-y-6 animate-fade-in">
+
         <PageHeader
           title="Payment Mode Report"
           description="Cash / UPI / Credit breakdown – Branch-wise"
           icon={CreditCard}
         />
 
-       <ReportFilters
-  dropdowns={[
-    {
-      key: "stateid",
-      label: "State",
-      options: masters.states,
-      optionValue: "id",
-      optionLabel: "state"
-    },
-    {
-      key: "cityid",
-      label: "City",
-      options: masters.cities,
-      optionValue: "id",
-      optionLabel: "city"
-    },
-    {
-      key: "centreid",
-      label: "Branch",
-      options: masters.centres,
-      optionValue: "centreid",
-      optionLabel: "centre"
-    }
-  ]}
-  showDateRange
-  filters={filters}
-  onFilterChange={(key, value) => {
-    setFilters(prev => {
-      const next = { ...prev, [key]: value };
+        <ReportFilters
+          dropdowns={[
+            {
+              key: "stateid",
+              label: "State",
+              options: masters.states,
+              optionValue: "id",
+              optionLabel: "state"
+            },
+            {
+              key: "cityid",
+              label: "City",
+              options: masters.cities,
+              optionValue: "id",
+              optionLabel: "city"
+            },
+            {
+              key: "centreid",
+              label: "Branch",
+              options: masters.centres,
+              optionValue: "centreid",
+              optionLabel: "centre"
+            }
+          ]}
+          showDateRange
+          filters={filters}
+          onFilterChange={(key, value) => {
+            setFilters(prev => {
+              const next = { ...prev, [key]: value };
 
-      if (key === "stateid") {
-        next.cityid = "";
-        next.centreid = "";
-      }
-      if (key === "cityid") {
-        next.centreid = "";
-      }
+              if (key === "stateid") {
+                next.cityid = "";
+                next.centreid = "";
+              }
+              if (key === "cityid") {
+                next.centreid = "";
+              }
 
-      return next;
-    });
-  }}
-/>
-
+              return next;
+            });
+          }}
+        />
 
         {summary && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -232,46 +270,152 @@ const PaymentMode = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
           <Card>
             <CardHeader><CardTitle>Payment Distribution</CardTitle></CardHeader>
             <CardContent className="h-[280px]">
               <ResponsiveContainer>
-                <PieChart>
-                  <Pie data={pieData} dataKey="value" innerRadius={50} outerRadius={90}>
-                    {pieData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                  </Pie>
-                  <Tooltip formatter={v => `₹${v}L`} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+  <PieChart>
+
+    <Pie
+      data={pieData}
+      dataKey="value"
+      innerRadius={60}
+      outerRadius={100}
+      paddingAngle={3}
+      isAnimationActive
+      animationDuration={900}
+      animationEasing="ease-out"
+    >
+      {pieData.map((entry, index) => (
+        <Cell
+          key={`cell-${index}`}
+          fill={entry.color}
+          stroke="white"
+          strokeWidth={2}
+        />
+      ))}
+    </Pie>
+
+    <Tooltip
+      formatter={(v, name) => [`₹${v}L`, name]}
+      contentStyle={{
+        borderRadius: 8,
+        border: "1px solid #e5e7eb"
+      }}
+    />
+
+    <Legend verticalAlign="bottom" height={36} />
+
+  </PieChart>
+</ResponsiveContainer>
+
             </CardContent>
           </Card>
 
           <Card className="lg:col-span-2">
-            <CardHeader><CardTitle>Branch-wise Payment Mix</CardTitle></CardHeader>
-            <CardContent className="h-[280px]">
-              <ResponsiveContainer>
-                <BarChart data={stackedChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis tickFormatter={v => `₹${v}L`} />
-                  <Tooltip formatter={v => `₹${v}L`} />
-                  <Legend />
-                  <Bar dataKey="Cash" stackId="a" fill="hsl(var(--chart-3))" />
-                  <Bar dataKey="UPI" stackId="a" fill="hsl(var(--chart-2))" />
-                  <Bar dataKey="Credit" stackId="a" fill="hsl(var(--chart-1))" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+  <CardHeader>
+    <CardTitle>Branch-wise Payment Mix</CardTitle>
+  </CardHeader>
+
+  <CardContent className="h-[350px] overflow-x-auto transition-all duration-500 ease-in-out">
+
+    <div
+      style={{
+        minWidth: `${Math.max(stackedChartData.length * 80, 800)}px`
+      }}
+      className="h-full"
+    >
+
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={stackedChartData}
+          margin={{ top: 20, right: 20, left: 10, bottom: 40 }}
+        >
+
+          <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+
+          <XAxis
+            dataKey="name"
+            interval={0}
+            angle={-30}
+            textAnchor="end"
+            height={60}
+            tick={{ fontSize: 11 }}
+          />
+
+          <YAxis
+            tickFormatter={(v) => `₹${v}L`}
+            tick={{ fontSize: 11 }}
+          />
+
+          <Tooltip
+            formatter={(v) => `₹${v}L`}
+            contentStyle={{
+              borderRadius: 8,
+              border: "1px solid #e5e7eb"
+            }}
+          />
+
+          <Legend />
+
+          <Bar
+            dataKey="Cash"
+            stackId="a"
+            fill="hsl(var(--chart-3))"
+            radius={[4, 4, 0, 0]}
+            isAnimationActive
+            animationDuration={800}
+          />
+
+          <Bar
+            dataKey="UPI"
+            stackId="a"
+            fill="hsl(var(--chart-2))"
+            radius={[4, 4, 0, 0]}
+            isAnimationActive
+            animationDuration={900}
+          />
+
+          <Bar
+            dataKey="Credit"
+            stackId="a"
+            fill="hsl(var(--chart-1))"
+            radius={[4, 4, 0, 0]}
+            isAnimationActive
+            animationDuration={1000}
+          />
+
+        </BarChart>
+      </ResponsiveContainer>
+
+    </div>
+  </CardContent>
+</Card>
+
+
         </div>
 
-        <DataTable
+       <DataTable
           title="Branch-wise Payment Mode Breakdown"
           subtitle="All amounts in Lakhs"
-          columns={columns}
-          data={tableRows}
+           columns={columns}
+            data={tableRows}
+            pagination={pagination}
+            onPageChange={(page, perPage) => {
+              setPagination(prev => ({
+                ...prev,
+                page: page ?? prev.page,
+                perPage: perPage ?? prev.perPage
+              }));
+            }}
+             extraActions={
+                <Button onClick={handleExport}>
+                  Download Excel
+                </Button>
+              }
         />
+
       </div>
     </DashboardLayout>
   );
