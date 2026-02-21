@@ -113,7 +113,7 @@ exports.getPaymentSummaryByMode = async ({
     SELECT
       pm.PaymentModeId  AS paymentmodeid,
       pm.PaymentMode    AS paymentmode,
-      SUM(r.Amount)     AS amount
+      ROUND(SUM(r.amount) / 100000, 2) AS amount
     FROM f_reciept r
     JOIN  payment_mode        pm ON pm.PaymentModeId       = r.PaymentModeID
     LEFT JOIN f_ledgertransaction lt ON lt.LedgerTransactionID = r.LedgerTransactionID
@@ -164,7 +164,7 @@ exports.getBranchPaymentDistribution = async ({
       c.CentreID     AS centreid,
       c.Centre       AS centre,
       pm.PaymentMode AS paymentmode,
-      SUM(r.Amount)  AS amount
+      ROUND(SUM(r.amount) / 100000, 2) AS amount
     FROM f_reciept r
     JOIN  payment_mode        pm ON pm.PaymentModeId       = r.PaymentModeID
     LEFT JOIN f_ledgertransaction lt ON lt.LedgerTransactionID = r.LedgerTransactionID
@@ -192,36 +192,47 @@ exports.getBranchPaymentTable = async ({
   where.push(`DATE(r.EntryDateTime) BETWEEN ? AND ?`);
   values.push(fromDate, toDate);
 
-  if (centreid) { where.push(`c.CentreID = ?`);  values.push(centreid); }
-  if (cityid)   { where.push(`c.CityID = ?`);    values.push(cityid);   }
-  if (stateid)  { where.push(`c.StateID = ?`);   values.push(stateid);  }
-  if (search)   { where.push(`c.Centre LIKE ?`); values.push(`%${search}%`); }
+  if (centreid) { where.push(`c.CentreID = ?`); values.push(centreid); }
+  if (cityid) { where.push(`c.CityID = ?`); values.push(cityid); }
+  if (stateid) { where.push(`c.StateID = ?`); values.push(stateid); }
+  if (search) { where.push(`c.Centre LIKE ?`); values.push(`%${search}%`); }
 
   where.push(`r.IsCancel = 0`);
 
   const whereClause = `WHERE ${where.join(' AND ')}`;
 
   const sortMap = {
-    centre : 'c.Centre',
-    credit : 'credit',
-    upi    : 'upi',
-    cash   : 'cash',
-    total  : 'total'
+    centre: 'c.Centre',
+    credit: 'credit',
+    upi: 'upi',
+    cash: 'cash',
+    total: 'total'
   };
-  const orderCol   = sortMap[sortBy]    || 'c.Centre';
-  const orderDir   = sortOrder === 'DESC' ? 'DESC' : 'ASC';
+  const orderCol = sortMap[sortBy] || 'c.Centre';
+  const orderDir = sortOrder === 'DESC' ? 'DESC' : 'ASC';
 
   const sql = `
     SELECT
-      c.CentreID AS centreid,
-      c.Centre   AS branch,
-      SUM(CASE WHEN pm.PaymentMode = 'Credit'
-               THEN r.Amount ELSE 0 END) AS credit,
-      SUM(CASE WHEN pm.PaymentMode = 'Cash'
-               THEN r.Amount ELSE 0 END) AS cash,
-      SUM(CASE WHEN pm.PaymentMode NOT IN ('Cash', 'Credit')
-               THEN r.Amount ELSE 0 END) AS upi,
-      SUM(r.Amount)                        AS total
+    c.CentreID AS centreid,
+    c.Centre   AS branch,
+
+    ROUND(
+        SUM(CASE WHEN pm.PaymentMode = 'Credit'
+                 THEN r.amount ELSE 0 END) / 100000, 2
+    ) AS credit,
+
+    ROUND(
+        SUM(CASE WHEN pm.PaymentMode = 'Cash'
+                 THEN r.amount ELSE 0 END) / 100000, 2
+    ) AS cash,
+
+    ROUND(
+        SUM(CASE WHEN pm.PaymentMode NOT IN ('Cash', 'Credit')
+                 THEN r.amount ELSE 0 END) / 100000, 2
+    ) AS upi,
+
+    ROUND(SUM(r.amount) / 100000, 2) AS total
+
     FROM f_reciept r
     JOIN  payment_mode        pm ON pm.PaymentModeId       = r.PaymentModeID
     LEFT JOIN f_ledgertransaction lt ON lt.LedgerTransactionID = r.LedgerTransactionID
@@ -247,10 +258,10 @@ exports.countBranchPaymentTable = async ({
   where.push(`DATE(r.EntryDateTime) BETWEEN ? AND ?`);
   values.push(fromDate, toDate);
 
-  if (centreid) { where.push(`c.CentreID = ?`);  values.push(centreid); }
-  if (cityid)   { where.push(`c.CityID = ?`);    values.push(cityid);   }
-  if (stateid)  { where.push(`c.StateID = ?`);   values.push(stateid);  }
-  if (search)   { where.push(`c.Centre LIKE ?`); values.push(`%${search}%`); }
+  if (centreid) { where.push(`c.CentreID = ?`); values.push(centreid); }
+  if (cityid) { where.push(`c.CityID = ?`); values.push(cityid); }
+  if (stateid) { where.push(`c.StateID = ?`); values.push(stateid); }
+  if (search) { where.push(`c.Centre LIKE ?`); values.push(`%${search}%`); }
 
   where.push(`r.IsCancel = 0`);
 
@@ -285,35 +296,55 @@ exports.exportBranchPaymentTable = async ({
   where.push(`DATE(r.EntryDateTime) BETWEEN ? AND ?`);
   values.push(fromDate, toDate);
 
-  if (centreid) { where.push(`c.CentreID = ?`);  values.push(centreid); }
-  if (cityid)   { where.push(`c.CityID = ?`);    values.push(cityid);   }
-  if (stateid)  { where.push(`c.StateID = ?`);   values.push(stateid);  }
-  if (search)   { where.push(`c.Centre LIKE ?`); values.push(`%${search}%`); }
+  if (centreid) { where.push(`c.CentreID = ?`); values.push(centreid); }
+  if (cityid) { where.push(`c.CityID = ?`); values.push(cityid); }
+  if (stateid) { where.push(`c.StateID = ?`); values.push(stateid); }
+  if (search) { where.push(`c.Centre LIKE ?`); values.push(`%${search}%`); }
 
   where.push(`r.IsCancel = 0`);
 
   const whereClause = `WHERE ${where.join(' AND ')}`;
 
   const sortMap = {
-    centre : 'c.Centre',
-    credit : 'credit',
-    upi    : 'upi',
-    cash   : 'cash',
-    total  : 'total'
+    centre: 'c.Centre',
+    credit: 'credit',
+    upi: 'upi',
+    cash: 'cash',
+    total: 'total'
   };
   const orderCol = sortMap[sortBy] || 'c.Centre';
   const orderDir = sortOrder === 'DESC' ? 'DESC' : 'ASC';
 
   const sql = `
-    SELECT
-      c.Centre  AS branch,
-      SUM(CASE WHEN pm.PaymentMode = 'Credit'
-               THEN r.Amount ELSE 0 END) AS credit,
-      SUM(CASE WHEN pm.PaymentMode = 'Cash'
-               THEN r.Amount ELSE 0 END) AS cash,
-      SUM(CASE WHEN pm.PaymentMode NOT IN ('Cash', 'Credit')
-               THEN r.Amount ELSE 0 END) AS upi,
-      SUM(r.Amount)                        AS total
+      SELECT
+        c.Centre AS branch,
+
+        ROUND(
+            SUM(CASE 
+                    WHEN pm.PaymentMode = 'Credit' 
+                    THEN r.amount 
+                    ELSE 0 
+                END) / 100000, 2
+        ) AS credit,
+
+        ROUND(
+            SUM(CASE 
+                    WHEN pm.PaymentMode = 'Cash' 
+                    THEN r.amount 
+                    ELSE 0 
+                END) / 100000, 2
+        ) AS cash,
+
+        ROUND(
+            SUM(CASE 
+                    WHEN pm.PaymentMode NOT IN ('Cash', 'Credit') 
+                    THEN r.amount 
+                    ELSE 0 
+                END) / 100000, 2
+        ) AS upi,
+
+        ROUND(SUM(r.amount) / 100000, 2) AS total
+
     FROM f_reciept r
     JOIN  payment_mode        pm ON pm.PaymentModeId       = r.PaymentModeID
     JOIN  f_ledgertransaction lt ON lt.LedgerTransactionID = r.LedgerTransactionID
