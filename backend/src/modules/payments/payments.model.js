@@ -29,14 +29,14 @@ exports.getPaymentFilters = async ({ stateid, cityid }) => {
   let citySql = `SELECT cm.ID AS id, cm.City AS city, cm.stateID AS stateid, sm.state
                  FROM city_master cm
                  join state_master sm on sm.id = cm.stateID and sm.IsActive = 1
-                 WHERE cm.IsActive = 1 order by state asc, city asc`;
+                 WHERE cm.IsActive = 1 `;
   if (stateid) {
     filters.cities = await db.query(
-      citySql + ` AND stateID = ? ORDER BY City`,
+      citySql + ` AND cm.stateID = ? order by state asc, city asc`,
       [stateid]
     );
   } else {
-    filters.cities = await db.query(citySql + ` ORDER BY City`);
+    filters.cities = await db.query(citySql + ` order by state asc, city asc`);
   }
 
   /* Centres */
@@ -50,15 +50,14 @@ exports.getPaymentFilters = async ({ stateid, cityid }) => {
                 FROM centre_master c
                 JOIN state_master sm ON sm.id      = c.StateID AND sm.IsActive = 1
                 JOIN city_master  cm ON cm.ID      = c.CityID  AND cm.IsActive = 1
-                WHERE c.isActive = 1
-                ORDER BY c.Centre`;
+                WHERE c.isActive = 1`;
 
   if (stateid) {
-    centreSql += ` AND StateID = ?`;
+    centreSql += ` AND c.StateID = ?`;
     centreValues.push(stateid);
   }
   if (cityid) {
-    centreSql += ` AND CityID = ?`;
+    centreSql += ` AND c.CityID = ?`;
     centreValues.push(cityid);
   }
 
@@ -78,8 +77,6 @@ exports.getPaymentFilters = async ({ stateid, cityid }) => {
 
   return filters;
 };
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 exports.getPaymentSummaryByMode = async ({
   fromDate,
@@ -131,7 +128,6 @@ exports.getPaymentSummaryByMode = async ({
   return db.query(sql, values);
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 
 exports.getBranchPaymentDistribution = async ({
   fromDate,
