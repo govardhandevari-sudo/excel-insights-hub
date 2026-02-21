@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/reports/PageHeader";
 import { ReportFilters } from "@/components/reports/ReportFilters";
 import { DataTable } from "@/components/reports/DataTable";
 import { KPICard } from "@/components/dashboard/KPICard";
+import { formatLakhs } from "@/utils/currency";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, Wallet, Banknote, Smartphone } from "lucide-react";
 import {
@@ -34,9 +35,9 @@ const getDefault3MonthRange = () => {
 /* ===================== TABLE COLUMNS ===================== */
 const columns = [
   { key: "branch", label: "Branch", align: "left" },
-  { key: "cash", label: "Cash (₹L)", align: "right", render: v => `₹${v.toFixed(1)}L` },
-  { key: "upi", label: "UPI (₹L)", align: "right", render: v => `₹${v.toFixed(1)}L` },
-  { key: "credit", label: "Credit (₹L)", align: "right", render: v => `₹${v.toFixed(1)}L` },
+  { key: "cash", label: "Cash", align: "right", render: v => formatLakhs(v) },
+  { key: "upi", label: "UPI", align: "right", render: v => formatLakhs(v) },
+  { key: "credit", label: "Credit", align: "right", render: v => formatLakhs(v) },
   {
     key: "total",
     label: "Total",
@@ -65,6 +66,13 @@ const PaymentMode = () => {
     centres: []
   });
 
+  const [activeSeries, setActiveSeries] = useState({
+    Cash: true,
+    UPI: true,
+    Credit: true
+  });
+
+
   const [pagination, setPagination] = useState({
     page: 1,
     perPage: 10,
@@ -89,7 +97,7 @@ const PaymentMode = () => {
         stateid: filters.stateid || undefined,
         cityid: filters.cityid || undefined
       }
-    }).then(res => { 
+    }).then(res => {
       const f = res.data.data?.filters || {};
 
       setMasters({
@@ -119,7 +127,8 @@ const PaymentMode = () => {
 
     /* SUMMARY */
     api.get("/payments/summary", { params: apiParams })
-      .then(res => { console.log(res.data)
+      .then(res => {
+        console.log(res.data)
         const s = res.data.data?.summary || {};
 
         setSummary({
@@ -137,7 +146,7 @@ const PaymentMode = () => {
         setChartData(rows);
       });
 
-   api.get("/payments/branch-table", {
+    api.get("/payments/branch-table", {
       params: {
         ...apiParams,
         page: pagination.page,
@@ -163,32 +172,32 @@ const PaymentMode = () => {
   }, [apiParams, pagination.page, pagination.perPage]);
 
   const handleExport = async () => {
-  const response = await api.get(
-    "/payments/branch-table/export-xlsx",
-    {
-      params: {
-        ...apiParams,
-        search: "",
-        sortBy: "",
-        sortOrder: ""
-      },
-      responseType: "blob"
-    }
-  );
+    const response = await api.get(
+      "/payments/branch-table/export-xlsx",
+      {
+        params: {
+          ...apiParams,
+          search: "",
+          sortBy: "",
+          sortOrder: ""
+        },
+        responseType: "blob"
+      }
+    );
 
-  const url = window.URL.createObjectURL(new Blob([response.data]));
-  const link = document.createElement("a");
-  link.href = url;
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
 
-  link.setAttribute(
-    "download",
-    `payment_report_${apiParams.fromDate}_to_${apiParams.toDate}.xlsx`
-  );
+    link.setAttribute(
+      "download",
+      `payment_report_${apiParams.fromDate}_to_${apiParams.toDate}.xlsx`
+    );
 
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-};
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
 
   /* ===================== DERIVED DATA ===================== */
 
@@ -197,13 +206,55 @@ const PaymentMode = () => {
     { name: "UPI", value: summary.upi.amount, color: "hsl(var(--chart-2))" },
     { name: "Credit", value: summary.credit.amount, color: "hsl(var(--chart-1))" }
   ] : [];
-
+  const pieDisplayData = pieData.map(item => ({
+    ...item,
+    value: activeSeries[item.name] ? item.value : 0
+  }));
   const stackedChartData = chartData.map(b => ({
     name: (b.branch || "").substring(0, 20),
     Cash: Number(b.cash || 0),
     UPI: Number(b.upi || 0),
     Credit: Number(b.credit || 0)
   }));
+
+  const categoryGap =
+    stackedChartData.length > 40
+      ? "2%"
+      : stackedChartData.length > 20
+        ? "8%"
+        : "20%";
+  const count = stackedChartData.length || 1;
+
+  /**
+   * Width per category:
+   *  - <=20  → spacious
+   *  - <=50  → medium
+   *  - <=100 → dense
+   *  - >100  → ultra dense
+   */
+  const categoryWidth =
+    count <= 20
+      ? 45
+      : count <= 50
+        ? 30
+        : count <= 100
+          ? 18
+          : 12;
+
+  const dynamicWidth = count * categoryWidth;
+
+  /**
+   * Bar thickness
+   */
+  const barSize =
+    count <= 20
+      ? 24
+      : count <= 50
+        ? 16
+        : count <= 100
+          ? 10
+          : 6;
+
 
   /* ===================== RENDER ===================== */
 
@@ -262,9 +313,9 @@ const PaymentMode = () => {
 
         {summary && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard title="Cash" value={`₹${summary.cash.amount}L`} change={`${summary.cash.percentage}%`} icon={Banknote} />
-            <KPICard title="UPI" value={`₹${summary.upi.amount}L`} change={`${summary.upi.percentage}%`} icon={Smartphone} />
-            <KPICard title="Credit" value={`₹${summary.credit.amount}L`} change={`${summary.credit.percentage}%`} icon={Wallet} />
+            <KPICard title="Cash" value={formatLakhs(summary.cash.amount)} change={`${summary.cash.percentage}%`} icon={Banknote} />
+            <KPICard title="UPI" value={formatLakhs(summary.upi.amount)} change={`${summary.upi.percentage}%`} icon={Smartphone} />
+            <KPICard title="Credit" value={formatLakhs(summary.credit.amount)} change={`${summary.credit.percentage}%`} icon={Wallet} />
             <KPICard title="Digital Adoption" value={`${summary.digitalAdoption.percentage}%`} icon={CreditCard} />
           </div>
         )}
@@ -275,145 +326,213 @@ const PaymentMode = () => {
             <CardHeader><CardTitle>Payment Distribution</CardTitle></CardHeader>
             <CardContent className="h-[280px]">
               <ResponsiveContainer>
-  <PieChart>
+                <PieChart>
 
-    <Pie
-      data={pieData}
-      dataKey="value"
-      innerRadius={60}
-      outerRadius={100}
-      paddingAngle={3}
-      isAnimationActive
-      animationDuration={900}
-      animationEasing="ease-out"
-    >
-      {pieData.map((entry, index) => (
-        <Cell
-          key={`cell-${index}`}
-          fill={entry.color}
-          stroke="white"
-          strokeWidth={2}
-        />
-      ))}
-    </Pie>
+                  <Pie
+                    data={pieDisplayData}
+                    dataKey="value"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={3}
+                    isAnimationActive
+                    animationDuration={800}
+                  >
+                    {pieDisplayData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        fillOpacity={activeSeries[entry.name] ? 1 : 0.3}
+                      />
+                    ))}
+                  </Pie>
 
-    <Tooltip
-      formatter={(v, name) => [`₹${v}L`, name]}
-      contentStyle={{
-        borderRadius: 8,
-        border: "1px solid #e5e7eb"
-      }}
-    />
+                  <Tooltip
+                    formatter={(v, name) => [formatLakhs(v), name]}
+                  />
 
-    <Legend verticalAlign="bottom" height={36} />
+                  <Legend
+                    payload={pieData.map(item => ({
+                      value: item.name,
+                      type: "square",
+                      id: item.name,
+                      color: item.color
+                    }))}
 
-  </PieChart>
-</ResponsiveContainer>
+                    onClick={(e) => {
+                      const key = e.value;
+
+                      setActiveSeries(prev => {
+                        const activeCount = Object.values(prev).filter(Boolean).length;
+
+                        if (prev[key] && activeCount === 1) {
+                          return prev; // prevent hiding last slice
+                        }
+
+                        return {
+                          ...prev,
+                          [key]: !prev[key]
+                        };
+                      });
+                    }}
+
+                    formatter={(value) => (
+                      <span
+                        style={{
+                          opacity: activeSeries[value] ? 1 : 0.4,
+                          textDecoration: activeSeries[value] ? "none" : "line-through",
+                          cursor: "pointer"
+                        }}
+                      >
+                        {value}
+                      </span>
+                    )}
+                  />
+
+                </PieChart>
+              </ResponsiveContainer>
 
             </CardContent>
           </Card>
 
           <Card className="lg:col-span-2">
-  <CardHeader>
-    <CardTitle>Branch-wise Payment Mix</CardTitle>
-  </CardHeader>
+            <CardHeader>
+              <CardTitle>Branch-wise Payment Mix</CardTitle>
+            </CardHeader>
 
-  <CardContent className="h-[350px] overflow-x-auto transition-all duration-500 ease-in-out">
+            <CardContent className="h-[350px] overflow-x-auto transition-all duration-500 ease-in-out">
 
-    <div
-      style={{
-        minWidth: `${Math.max(stackedChartData.length * 80, 800)}px`
-      }}
-      className="h-full"
-    >
+              <div
+                style={{
+                  minWidth: `${Math.max(dynamicWidth, 800)}px`
+                }}
+                className="h-full"
+              >
 
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={stackedChartData}
-          margin={{ top: 20, right: 20, left: 10, bottom: 40 }}
-        >
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={stackedChartData}
+                    barCategoryGap={0}
+                    barGap={0}
+                    margin={{ top: 20, right: 20, left: 10, bottom: 40 }}
+                  >
 
-          <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
 
-          <XAxis
-            dataKey="name"
-            interval={0}
-            angle={-30}
-            textAnchor="end"
-            height={60}
-            tick={{ fontSize: 11 }}
-          />
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
 
-          <YAxis
-            tickFormatter={(v) => `₹${v}L`}
-            tick={{ fontSize: 11 }}
-          />
+                    <XAxis
+                      dataKey="name"
+                      interval={0}
+                      angle={count > 50 ? -90 : -30}
+                      textAnchor="end"
+                      height={count > 50 ? 120 : 60}
+                      tick={{ fontSize: count > 80 ? 9 : 11 }}
+                    />
 
-          <Tooltip
-            formatter={(v) => `₹${v}L`}
-            contentStyle={{
-              borderRadius: 8,
-              border: "1px solid #e5e7eb"
-            }}
-          />
 
-          <Legend />
+                    <YAxis
+                      tickFormatter={(v) => formatLakhs(v)}
+                      tick={{ fontSize: 11 }}
+                    />
 
-          <Bar
-            dataKey="Cash"
-            stackId="a"
-            fill="hsl(var(--chart-3))"
-            radius={[4, 4, 0, 0]}
-            isAnimationActive
-            animationDuration={800}
-          />
+                    <Tooltip
+                      formatter={(v) => formatLakhs(v)}
+                      contentStyle={{
+                        borderRadius: 8,
+                        border: "1px solid #e5e7eb"
+                      }}
+                    />
 
-          <Bar
-            dataKey="UPI"
-            stackId="a"
-            fill="hsl(var(--chart-2))"
-            radius={[4, 4, 0, 0]}
-            isAnimationActive
-            animationDuration={900}
-          />
+                    <Legend
+                      onClick={(e) => {
+                        const key = e.dataKey || e.value;
 
-          <Bar
-            dataKey="Credit"
-            stackId="a"
-            fill="hsl(var(--chart-1))"
-            radius={[4, 4, 0, 0]}
-            isAnimationActive
-            animationDuration={1000}
-          />
+                        setActiveSeries(prev => {
+                          const currentlyActive = Object.values(prev).filter(Boolean).length;
 
-        </BarChart>
-      </ResponsiveContainer>
+                          // Prevent disabling last active item
+                          if (prev[key] && currentlyActive === 1) {
+                            return prev;
+                          }
 
-    </div>
-  </CardContent>
-</Card>
+                          return {
+                            ...prev,
+                            [key]: !prev[key]
+                          };
+                        });
+                      }}
+
+                      formatter={(value) => (
+                        <span
+                          style={{
+                            opacity: activeSeries[value] ? 1 : 0.4,
+                            textDecoration: activeSeries[value] ? "none" : "line-through",
+                            cursor: "pointer"
+                          }}
+                        >
+                          {value}
+                        </span>
+                      )}
+                    />
+
+                    <Bar
+                      dataKey="Cash"
+                      stackId="a"
+                      barSize={barSize}
+                      fill="hsl(var(--chart-3))"
+                      hide={!activeSeries.Cash}
+                      isAnimationActive={count <= 60}
+                      animationDuration={400}
+                    />
+
+                    <Bar
+                      dataKey="UPI"
+                      stackId="a"
+                      barSize={barSize}
+                      fill="hsl(var(--chart-2))"
+                      hide={!activeSeries.UPI}
+                      isAnimationActive={count <= 60}
+                      animationDuration={400}
+                    />
+
+                    <Bar
+                      dataKey="Credit"
+                      stackId="a"
+                      barSize={barSize}
+                      fill="hsl(var(--chart-1))"
+                      hide={!activeSeries.Credit}
+                      isAnimationActive={count <= 60}
+                      animationDuration={400}
+                    />
+
+
+                  </BarChart>
+                </ResponsiveContainer>
+
+              </div>
+            </CardContent>
+          </Card>
 
 
         </div>
 
-       <DataTable
+        <DataTable
           title="Branch-wise Payment Mode Breakdown"
           subtitle="All amounts in Lakhs"
-           columns={columns}
-            data={tableRows}
-            pagination={pagination}
-            onPageChange={(page, perPage) => {
-              setPagination(prev => ({
-                ...prev,
-                page: page ?? prev.page,
-                perPage: perPage ?? prev.perPage
-              }));
-            }}
-             extraActions={
-                <Button onClick={handleExport}>
-                  Download Excel
-                </Button>
-              }
+          columns={columns}
+          data={tableRows}
+          pagination={pagination}
+          onPageChange={(page, perPage) => {
+            setPagination(prev => ({
+              ...prev,
+              page: page ?? prev.page,
+              perPage: perPage ?? prev.perPage
+            }));
+          }}
+          extraActions={
+            <Button onClick={handleExport}>
+              Download Excel
+            </Button>
+          }
         />
 
       </div>
