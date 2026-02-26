@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import {
@@ -18,21 +18,53 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { api } from "@/services/api";
 
 export function SalespersonTargetDialog({ salesperson, open, onOpenChange }) {
   const { toast } = useToast();
-  
-  // Mock previous targets - in real app this would come from database
-  const [targetHistory, setTargetHistory] = useState([
-    { id: 1, startDate: new Date(2025, 0, 1), endDate: new Date(2025, 0, 31), amount: "150000" },
-    { id: 2, startDate: new Date(2025, 1, 1), endDate: new Date(2025, 1, 28), amount: "175000" },
-  ]);
 
+  const [targetHistory, setTargetHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [newStartDate, setNewStartDate] = useState();
   const [newEndDate, setNewEndDate] = useState();
   const [newAmount, setNewAmount] = useState("");
 
-  const handleAddTarget = () => {
+  const loadTargetHistory = async () => {
+    if (!salesperson?.id) return;
+
+    try {
+      setLoading(true);
+      const res = await api.get("/salesperson-targets/history", {
+        params: { salespersonId: salesperson.id },
+      });
+
+      const rows = res.data?.data?.rows || [];
+      setTargetHistory(
+        rows.map((row) => ({
+          ...row,
+          startDate: new Date(row.startDate),
+          endDate: new Date(row.endDate),
+          amount: Number(row.targetAmount || 0),
+        }))
+      );
+    } catch {
+      toast({
+        title: "Failed to load targets",
+        description: "Unable to fetch target history right now",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (open && salesperson?.id) {
+      loadTargetHistory();
+    }
+  }, [open, salesperson?.id]);
+
+  const handleAddTarget = async () => {
     if (!newStartDate || !newEndDate || !newAmount) {
       toast({
         title: "Missing Fields",
@@ -51,30 +83,51 @@ export function SalespersonTargetDialog({ salesperson, open, onOpenChange }) {
       return;
     }
 
-    const newTarget = {
-      id: Date.now(),
-      startDate: newStartDate,
-      endDate: newEndDate,
-      amount: newAmount,
-    };
+    try {
+      await api.post("/salesperson-targets", {
+        salespersonId: String(salesperson.id),
+        salespersonName: salesperson.name,
+        branch: salesperson.branch,
+        region: salesperson.region,
+        startDate: format(newStartDate, "yyyy-MM-dd"),
+        endDate: format(newEndDate, "yyyy-MM-dd"),
+        targetAmount: Number(newAmount),
+      });
 
-    setTargetHistory((prev) => [...prev, newTarget]);
-    setNewStartDate(undefined);
-    setNewEndDate(undefined);
-    setNewAmount("");
+      setNewStartDate(undefined);
+      setNewEndDate(undefined);
+      setNewAmount("");
 
-    toast({
-      title: "Target Added",
-      description: `New target of ₹${newAmount} added for ${salesperson?.name}`,
-    });
+      await loadTargetHistory();
+
+      toast({
+        title: "Target Added",
+        description: `New target of ₹${Number(newAmount).toLocaleString()} added for ${salesperson?.name}`,
+      });
+    } catch {
+      toast({
+        title: "Unable to save",
+        description: "Target could not be saved",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteTarget = (id) => {
-    setTargetHistory((prev) => prev.filter((t) => t.id !== id));
-    toast({
-      title: "Target Removed",
-      description: "Target has been removed",
-    });
+  const handleDeleteTarget = async (id) => {
+    try {
+      await api.delete(`/salesperson-targets/${id}`);
+      setTargetHistory((prev) => prev.filter((t) => t.id !== id));
+      toast({
+        title: "Target Removed",
+        description: "Target has been removed",
+      });
+    } catch {
+      toast({
+        title: "Delete Failed",
+        description: "Unable to delete target",
+        variant: "destructive",
+      });
+    }
   };
 
   if (!salesperson) return null;
@@ -91,10 +144,11 @@ export function SalespersonTargetDialog({ salesperson, open, onOpenChange }) {
           </p>
         </DialogHeader>
 
-        {/* Previous Targets */}
         <div className="space-y-3">
           <h3 className="text-sm font-medium text-foreground">Target History</h3>
-          {targetHistory.length === 0 ? (
+          {loading ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">Loading...</p>
+          ) : targetHistory.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">
               No targets set yet
             </p>
@@ -118,7 +172,7 @@ export function SalespersonTargetDialog({ salesperson, open, onOpenChange }) {
                   {targetHistory.map((target) => (
                     <tr key={target.id} className="border-b last:border-0">
                       <td className="px-3 py-2 text-sm">
-                        {format(target.startDate, "dd MMM yyyy")} -{" "}
+                        {format(target.startDate, "dd MMM yyyy")} - {" "}
                         {format(target.endDate, "dd MMM yyyy")}
                       </td>
                       <td className="px-3 py-2 text-sm font-medium">
@@ -142,11 +196,9 @@ export function SalespersonTargetDialog({ salesperson, open, onOpenChange }) {
           )}
         </div>
 
-        {/* Add New Target */}
         <div className="space-y-3 pt-4 border-t">
           <h3 className="text-sm font-medium text-foreground">Add New Target</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Start Date */}
             <div className="space-y-1.5">
               <Label className="text-xs">Start Date</Label>
               <Popover>
@@ -174,7 +226,6 @@ export function SalespersonTargetDialog({ salesperson, open, onOpenChange }) {
               </Popover>
             </div>
 
-            {/* End Date */}
             <div className="space-y-1.5">
               <Label className="text-xs">End Date</Label>
               <Popover>
@@ -203,7 +254,6 @@ export function SalespersonTargetDialog({ salesperson, open, onOpenChange }) {
               </Popover>
             </div>
 
-            {/* Amount */}
             <div className="space-y-1.5">
               <Label className="text-xs">Target Amount (₹)</Label>
               <Input
