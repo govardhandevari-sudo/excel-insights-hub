@@ -1,5 +1,6 @@
 const db = require('../common/base.repository');
 const mysql = require('mysql2');
+const { getLocationFilters } = require("../common/locationFilters.model");
 
 // ─── Schema reference ────────────────────────────────────────────────────────
 // state_master   : id, state, IsActive, dtEntry, Updatedate
@@ -15,65 +16,16 @@ const mysql = require('mysql2');
 // ─────────────────────────────────────────────────────────────────────────────
 
 exports.getPaymentFilters = async ({ stateid, cityid }) => {
-  const filters = {};
+  const filters = await getLocationFilters({ stateid, cityid });
 
-  /* States */
-  filters.states = await db.query(
-    `SELECT id, state
-     FROM state_master
-     WHERE IsActive = 1
-     ORDER BY state`
-  );
-
-  /* Cities */
-  let citySql = `SELECT cm.ID AS id, cm.City AS city, cm.stateID AS stateid, sm.state
-                 FROM city_master cm
-                 join state_master sm on sm.id = cm.stateID and sm.IsActive = 1
-                 WHERE cm.IsActive = 1 `;
-  if (stateid) {
-    filters.cities = await db.query(
-      citySql + ` AND cm.stateID = ? order by state asc, city asc`,
-      [stateid]
-    );
-  } else {
-    filters.cities = await db.query(citySql + ` order by state asc, city asc`);
-  }
-
-  /* Centres */
-  const centreValues = [];
-  let centreSql = `
-                  SELECT 
-                    c.CentreID AS centreid,
-                    c.Centre   AS centre,
-                    c.StateID  AS stateid,
-                    c.CityID   AS cityid
-                FROM centre_master c
-                JOIN state_master sm ON sm.id      = c.StateID AND sm.IsActive = 1
-                JOIN city_master  cm ON cm.ID      = c.CityID  AND cm.IsActive = 1
-                WHERE c.isActive = 1`;
-
-  if (stateid) {
-    centreSql += ` AND c.StateID = ?`;
-    centreValues.push(stateid);
-  }
-  if (cityid) {
-    centreSql += ` AND c.CityID = ?`;
-    centreValues.push(cityid);
-  }
-
-  filters.centres = await db.query(
-    centreSql + ` ORDER BY Centre`,
-    centreValues
-  );
-
-  /* Payment modes */
-  filters.paymentModes = await db.query(
-    `SELECT PaymentModeId AS paymentmodeid,
-            PaymentMode   AS paymentmode
-     FROM payment_mode
-     WHERE Active = 1
-     ORDER BY PaymentMode`
-  );
+  /* Add payment modes only here */
+  filters.paymentModes = await db.query(`
+    SELECT PaymentModeId AS paymentmodeid,
+           PaymentMode   AS paymentmode
+    FROM payment_mode
+    WHERE Active = 1
+    ORDER BY PaymentMode
+  `);
 
   return filters;
 };
@@ -123,7 +75,7 @@ exports.getPaymentSummaryByMode = async ({
     ORDER BY pm.PaymentMode
   `;
 
-  console.log(mysql.format(sql, values));
+  //console.log(mysql.format(sql, values));
 
   return db.query(sql, values);
 };
@@ -245,8 +197,6 @@ exports.getBranchPaymentTable = async ({
 
   return db.query(sql, [...values, limit, offset]);
 };
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 exports.countBranchPaymentTable = async ({
   fromDate, toDate,
