@@ -392,6 +392,24 @@ CREATE TABLE `f_panel_master` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `payment_mode`
+--
+
+DROP TABLE IF EXISTS `payment_mode`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `payment_mode` (
+  `PaymentModeId` int(11) NOT NULL AUTO_INCREMENT,
+  `PaymentMode` varchar(50) NOT NULL DEFAULT '',
+  `Remarks` varchar(200) DEFAULT NULL,
+  `Active` tinyint(2) NOT NULL DEFAULT 1,
+  `Updatedate_trigger` datetime DEFAULT NULL,
+  `Updatedate` datetime DEFAULT NULL,
+  PRIMARY KEY (`PaymentModeId`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `f_reciept`
 --
 
@@ -715,6 +733,48 @@ CREATE TABLE `patient_labinvestigation_opd` (
   `IsUpdate` tinyint(2) DEFAULT 0,
   PRIMARY KEY (`Test_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `salesperson_centre_map`
+--
+
+DROP TABLE IF EXISTS `salesperson_centre_map`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `salesperson_centre_map` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `salesperson_id` int(11) NOT NULL,
+  `centre_id` int(11) NOT NULL,
+  `is_active` tinyint(2) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_salesperson_centre` (`salesperson_id`,`centre_id`),
+  KEY `idx_scm_centre` (`centre_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `salesperson_target_history`
+--
+
+DROP TABLE IF EXISTS `salesperson_target_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `salesperson_target_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `salesperson_id` varchar(50) NOT NULL,
+  `salesperson_name` varchar(100) NOT NULL,
+  `branch` varchar(100) DEFAULT NULL,
+  `region` varchar(100) DEFAULT NULL,
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
+  `target_amount` decimal(12,2) NOT NULL,
+  `notes` varchar(250) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_salesperson_period` (`salesperson_id`,`start_date`,`end_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
