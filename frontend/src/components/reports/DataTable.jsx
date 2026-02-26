@@ -32,7 +32,11 @@ export function DataTable({
   rowClickable,
   showPagination = true,
   pagination,
-  onPageChange,
+  onPageChange,  
+  search,
+  onSearchInputChange,
+  onSearchSubmit,
+  onSearchClear,
   extraActions
 }) {
   const navigate = useNavigate();
@@ -123,7 +127,10 @@ export function DataTable({
       onRowClick(row);
     }
   };
-
+  const handleSearchChange = (value) => {
+    setGlobalSearch(value);
+    onPageChange?.(1, undefined, value);  // reset to page 1
+  };
   return (
     <Card className={cn("shadow-card", className)}>
       <CardHeader className="pb-3">
@@ -137,15 +144,35 @@ export function DataTable({
            {extraActions}
           </div>
 
-          <div className="relative w-full sm:max-w-xs">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search in table..."
-              value={globalSearch}
-              onChange={(e) => setGlobalSearch(e.target.value)}
-              className="pl-9 h-9 bg-background border-input"
-            />
-          </div>
+          <div className="flex gap-2 w-full sm:max-w-md">
+          <Input
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => onSearchInputChange?.(e.target.value)}
+            className="h-9"
+          />
+
+          {search && (
+            <>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={onSearchSubmit}
+              >
+                Search
+              </Button>
+
+              <Button
+                size="sm"
+                className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={onSearchClear}
+              >
+                Clear
+              </Button>
+            </>
+          )}
+        </div>
+
 
         </div>
       </CardHeader>

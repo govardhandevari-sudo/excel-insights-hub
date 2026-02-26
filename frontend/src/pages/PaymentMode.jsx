@@ -6,7 +6,7 @@ import { DataTable } from "@/components/reports/DataTable";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { formatLakhs } from "@/utils/currency";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CreditCard, Wallet, Banknote, Smartphone } from "lucide-react";
+import { CreditCard, Wallet, Banknote, Smartphone, Download ,Search,XCircle} from "lucide-react";
 import {
   PieChart,
   Pie,
@@ -49,7 +49,8 @@ const columns = [
 const PaymentMode = () => {
 
   const { from, to } = getDefault3MonthRange();
-
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   /* ===================== FILTER STATE ===================== */
   const [filters, setFilters] = useState({
     stateid: "",
@@ -150,7 +151,8 @@ const PaymentMode = () => {
       params: {
         ...apiParams,
         page: pagination.page,
-        perPage: pagination.perPage
+        perPage: pagination.perPage,
+        search
       }
     }).then(res => {
 
@@ -169,7 +171,7 @@ const PaymentMode = () => {
     });
 
 
-  }, [apiParams, pagination.page, pagination.perPage]);
+  }, [apiParams, pagination.page, pagination.perPage,search]);
 
   const handleExport = async () => {
     const response = await api.get(
@@ -179,7 +181,8 @@ const PaymentMode = () => {
           ...apiParams,
           search: "",
           sortBy: "",
-          sortOrder: ""
+          sortOrder: "",
+          search
         },
         responseType: "blob"
       }
@@ -312,7 +315,8 @@ const PaymentMode = () => {
         />
 
         {summary && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
             <KPICard title="Cash" value={formatLakhs(summary.cash.amount)} change={`${summary.cash.percentage}%`} icon={Banknote} />
             <KPICard title="UPI" value={formatLakhs(summary.upi.amount)} change={`${summary.upi.percentage}%`} icon={Smartphone} />
             <KPICard title="Credit" value={formatLakhs(summary.credit.amount)} change={`${summary.credit.percentage}%`} icon={Wallet} />
@@ -321,6 +325,7 @@ const PaymentMode = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
 
           <Card>
             <CardHeader><CardTitle>Payment Distribution</CardTitle></CardHeader>
@@ -522,15 +527,43 @@ const PaymentMode = () => {
           data={tableRows}
           pagination={pagination}
           onPageChange={(page, perPage) => {
-            setPagination(prev => ({
-              ...prev,
-              page: page ?? prev.page,
-              perPage: perPage ?? prev.perPage
-            }));
-          }}
+              setPagination(prev => ({
+                ...prev,
+                page: page ?? prev.page,
+                perPage: perPage ?? prev.perPage
+              }));
+            }}
+            search={searchInput}
+            onSearchInputChange={setSearchInput}
+            onSearchSubmit={() => {
+              setSearch(searchInput);
+              setPagination(prev => ({
+                ...prev,
+                page: 1
+              }));
+            }}
+            onSearchClear={() => {
+              setSearchInput("");
+              setSearch("");
+              setPagination(prev => ({
+                ...prev,
+                page: 1
+              }));
+            }}
           extraActions={
-            <Button onClick={handleExport}>
-              Download Excel
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={handleExport}
+              className="relative group hover:shadow-md transition-all duration-200"
+            >
+              {/* Download Icon */}
+              <Download className="h-4 w-4" />
+
+              {/* Excel Badge */}
+              <span className="absolute -top-1 -right-1 bg-green-600 text-white text-[9px] px-1 rounded-sm font-bold">
+                XLS
+              </span>
             </Button>
           }
         />
